@@ -5,7 +5,7 @@
         <form @submit.prevent="handleLogin">
           <div class="mb-4">
             <label class="block mb-1 text-gray-600">Email</label>
-            <input v-model="email" type="email" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
+            <input v-model="email" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:border-blue-300" required />
           </div>
           <div class="mb-6">
             <label class="block mb-1 text-gray-600">Password</label>
@@ -26,15 +26,16 @@
   import axios from 'axios'
   import { ref } from 'vue'
   
-  const email = ref('')
-  const password = ref('')
+  const email = ref('jane_smith')
+  const password = ref('securePass456')
   const router = useRouter()
+  const config = useRuntimeConfig()
 
   const handleLogin = async () => {
   try {
     const var1: string = ''
-    const response = await axios.post('http://localhost:3001/auth/login', {
-      email: email.value,
+    const response = await axios.post(config.public.apiBase + '/api/auth/login', {
+      username: email.value,
       password: password.value
     })
 
@@ -42,10 +43,11 @@
     console.log('Hello')
     // const token = response.data.token
     sessionStorage.setItem('token', response?.data?.access_token)
+    sessionStorage.setItem('refreshtoken', response?.data?.refresh_token)
     
 
     alert(JSON.stringify(response.data))
-    // router.push('/')
+    router.push('/InvoiceList')
 
   } catch (error) {
     alert('Invalid credentials or server error')
