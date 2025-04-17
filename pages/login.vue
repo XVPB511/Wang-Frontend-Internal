@@ -13,10 +13,10 @@
           </div>
           <button type="submit" class="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">Login</button>
         </form>
-        <p class="mt-4 text-sm text-center text-gray-600">
+        <!-- <p class="mt-4 text-sm text-center text-gray-600">
           Don't have an account?
           <NuxtLink to="/register" class="text-blue-600 hover:underline">Register</NuxtLink>
-        </p>
+        </p> -->
       </div>
     </div>
   </template>
