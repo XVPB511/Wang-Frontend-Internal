@@ -25,6 +25,7 @@
         <div class="meta flex  ">
             <div class="border p-2">
                 <p>รหัสลูกค้า: {{ quotation.customerCode }}</p>
+                <p>รหัสลูกค้า: {{ quotation.customerCode }}</p>
                 <p>วันที่: {{ quotation.date }}</p>
                 <p>เลขที่ใบเสนอราคา: {{ quotation.quotationNumber }}</p>
                 <p>""</p>

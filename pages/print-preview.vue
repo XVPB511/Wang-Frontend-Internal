@@ -22,13 +22,14 @@ onMounted(async () => {
     products.value = await res.data
 
     window.print(); //เหลือแต่ให้มัน Enter auto
-
-    // ส่งแจ้ง backend ว่าปริ้นเสร็จแล้ว
-    await axios.post('https://your-backend.com/api/print-done', {
-      qc_invoice: invoiceId,
-    })
-
+    localStorage.removeItem("isPrinting")
+    // await axios.post('https://your-backend.com/api/print-done', {
+    //   qc_invoice: invoiceId,
+    // })
     window.close();
+    // ส่งแจ้ง backend ว่าปริ้นเสร็จแล้ว
+
+
     //       // ยิง API เพื่อบันทึกหรือแจ้งพิมพ์
     //       await fetch('/api/print', {
     //   method: 'POST',
