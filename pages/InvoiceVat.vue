@@ -42,13 +42,14 @@
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
-import { socketpart } from "../components/socket";
+import { socketvat } from "../components/socket";
 
 const config = useRuntimeConfig()
 const router = useRouter()
 
 const offset = ref(0)
 const limit = ref(10)
+console.log("offset.val", offset.value)
 
 function handlePreviousBtn() {
     offset.value = offset.value - 10
@@ -73,7 +74,7 @@ function handleNextBtn() {
 }
 
 function loadInvoices(offset: number, limit: number) {
-    socketpart.emit('invoice:get', { offset, limit })
+    socketvat.emit('invoice:get', { offset, limit })
 
     // output.value += `\n📤 Requesting invoices with offset: ${offset}, limit: ${limit}\n`
 }
@@ -102,6 +103,13 @@ const invoices = ref<Invoice[]>([])
 
 // Columns definition with the updated interface
 const columns: TableColumn<Invoice>[] = [
+    {
+        id: 'index',
+        header: 'ลำดับที่',
+        cell: ({ row, table }) => {
+            return `${table.getRowModel().rows.indexOf(row) + 1}`
+        }
+    },
     {
         id: 'index',
         header: 'ลำดับที่',
@@ -169,18 +177,18 @@ const columns: TableColumn<Invoice>[] = [
         header: 'วันที่พิมพ์ QC',
         cell: ({ row }) => `${row.getValue('qc_timePrice')}`,
     },
-    
+
 ];
 
-socketpart.on('connect', () => {
+socketvat.on('connect', () => {
     console.log('✅ WebSocket Connected')
 })
 
-socketpart.on('disconnect', () => {
+socketvat.on('disconnect', () => {
     console.log('🔌 WebSocket Disconnected')
 })
 
-socketpart.on('invoice:print', (data) => {
+socketvat.on('invoice:print', (data) => {
     // console.log(data)
     const originalValueFromBackend = data as InvoiceFromAPI[]
 
@@ -190,7 +198,7 @@ socketpart.on('invoice:print', (data) => {
             isPrinted: false
         }
     });
-    socketpart.emit('invoice:printed', { sh_running: invoices.value[0].sh_running });
+    socketvat.emit('invoice:printed', { sh_running: invoices.value[0].sh_running });
     return data;
 })
 
@@ -230,13 +238,13 @@ function checkPrint() {
 // GPT code end
 onMounted(() => {
 
-    socketpart.emit('invoice:get', { offset, limit })
+    socketvat.emit('invoice:get', { offset, limit })
 
-    socketpart.on('connect', () => {
+    socketvat.on('connect', () => {
         console.log('✅ WebSocket Connected')
     })
 
-    socketpart.on('disconnect', () => {
+    socketvat.on('disconnect', () => {
         console.log('🔌 WebSocket Disconnected')
     })
 
@@ -260,7 +268,7 @@ onMounted(() => {
 })
 
 const socketStatus = computed(() => {
-    return socketpart.connected
+    return socketvat.connected
 })
 
 const RefreshToken = async () => {
@@ -274,16 +282,4 @@ const RefreshToken = async () => {
     sessionStorage.setItem('refreshtoken', response?.data?.refresh_token)
 }
 
-const handlePrint = async (id: string, rowData: any) => {
-
-    try {
-        const routeData = router.resolve({ name: 'print-preview', query: { sh_running: id } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
-        console.log(routeData)
-        // window.open(routeData.href, '_blank')
-
-    } catch (error) {
-        console.error('เกิดข้อผิดพลาดขณะพิมพ์:', error);
-    }
-
-}
 </script>
