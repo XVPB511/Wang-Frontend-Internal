@@ -1,200 +1,255 @@
 <template>
-    <div class="bg-gray-500 flex-1 flex flex-col">
-      <div class="bg-white mx-3 mt-3 flex-1 text-black border-t-3 border-sky-500">
-        <div class="flex justify-between p-2">
-          รายการใบกำกับสินค้า
-          <div class="flex justify-between ">
-            <div class="pr-1">
-              <input type="id" class="border rounded-l-md" placeholder="so_running"/>
-              <button type="submit" class="border rounded-r-md">ค้นหา</button>
-            </div>
-            <div class="rounded-md">
-              <input type="date" class="border rounded-l-md" placeholder="so_running"/>
-              <button type="submit" class="border border-gray rounded-r-md">ค้นหา</button>
-            </div>
+  <div class="bg-gray-100 min-h-screen p-4">
+    <div class="bg-white rounded-2xl shadow-lg p-6 space-y-4">
+      <div class="flex items-center justify-between border-b pb-4">
+        <h1 class="text-xl font-semibold text-sky-600">📄 รายการใบกำกับสินค้า</h1>
+
+        <div class="flex space-x-2">
+          <div class="flex">
+            <input
+              type="text"
+              placeholder="เลขที่ใบจอง (so_running)"
+              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300"
+            />
+            <button class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600">ค้นหา</button>
+          </div>
+          <div class="flex">
+            <input
+              type="date"
+              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300"
+            />
+            <button class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600">ค้นหา</button>
           </div>
         </div>
-        <hr/>
-        <div>
-          <button @click="RefreshToken"> refresh</button>
-        </div>
-        <div class="flex justify-end p-3">
-          <input type="id" class="w-sm px-4 py-2 border rounded-md " placeholder="สแกน หมายเหตุ เลข เพื่อสั่งพิมพ์บิลใหม่"/>
-        </div>
-        <div class="flex justify-end pr-5 space-x-4">
-          <button class="border p-1 rounded-md"><</button>
-          <button class="border p-1 rounded-md">></button>
-        </div>
-        <div>
-          <UTable
-            :data="wsData"
-            class="text-black"
-            :columns="columns"
-            :enable-column-resizing="true"
-          />
-        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <input
+          type="text"
+          placeholder="🔍 สแกน หมายเหตุ เลข เพื่อสั่งพิมพ์บิลใหม่"
+          class="border w-96 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
+        />
+      </div>
+
+      <div class="flex justify-end space-x-2">
+        <button
+          @click="handlePreviousBtn"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md"
+        >
+          ⬅
+        </button>
+        <button
+          @click="handleNextBtn"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md"
+        >
+          ➡
+        </button>
+      </div>
+
+      <div>
+        <UTable
+          :data="invoices"
+          class="text-black"
+          :columns="columns"
+          :enable-column-resizing="true"
+        />
       </div>
     </div>
+  </div>
 </template>
+
 
 <script setup lang="ts">
 
-definePageMeta({
-  layout: 'check-login'
-})
+// definePageMeta({
+//   layout: 'check-login'
+// })
 
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
+import { socket } from "../components/socket";
 
 const config = useRuntimeConfig()
 const router = useRouter()
 
-interface BookingItem {
-  id: number
-  booking_id: string
-  customer_id: string
-  booking_amount: number
-  shop_name: string
-  qc_code: string
-  qc_bill_number: string
-  skip_flag: boolean
-  qc_bill_amount: number
-  qc_bill_datetime: string
-  qc_print_count: number
-  qc_print_datetime: string
-  qc_print_code2: string
+const offset = ref(0)
+const limit = ref(10)
+
+// GPT code start
+// Define the updated TypeScript interface for the invoice data
+interface Invoice {
+  mem_code: string;
+  mem_name: string;
+  emp_code: string;
+  sh_running: string;
+  sh_memcode: string;
+  sh_listsale: number;
+  sh_listfree: number;
+  sh_sumprice: number;
+  sh_datetime: string;
+  sh_print: number;
+  qc_invoice: string;
+  qc_print: number;
+  qc_timePrice: string;
 }
+const invoices = ref<Invoice[]>([])
 
-interface ServerMessage {
-  type: string
-  payload: BookingItem[]
-}
-
-// ใช้ as WebSocket เพื่อให้ TypeScript เข้าใจ type
-const socket = ref<WebSocket | null>(null)
-const wsData = ref<BookingItem[]>([])
-
-const columns : TableColumn<any>[]= [
-{
-    accessorKey: 'id',
-    header: 'ลำดับ',
-    cell: ({ row }) => `${row.getValue('id')}`
-  },
-{
-    accessorKey: 'booking_id',
-    header: 'เลขที่[ใบจอง]',
-    cell: ({ row }) => `${row.getValue('booking_id')}`
-  },
-{
-    accessorKey: 'customer_id',
-    header: 'ลูกหนี้[ใบจอง]',
-    cell: ({ row }) => `${row.getValue('customer_id')}`
-  },
-{
-    accessorKey: 'booking_amount',
-    header: 'มูลค่า[ใบจอง]',
-    cell: ({ row }) => `${row.getValue('booking_amount')}`
-  },
-{
-    accessorKey: 'shop_name',
-    header: 'นามร้าน',
-    cell: ({ row }) => `${row.getValue('shop_name')}`
-  },
-{
-    accessorKey: 'qc_code',
-    header: 'QC [ใบจอง]',
-    cell: ({ row }) => `${row.getValue('qc_code')}`
-  },
-{
-    accessorKey: 'qc_bill_number',
-    header: 'QC เลขบิล',
-    cell: ({ row }) => `${row.getValue('qc_bill_number')}`
-  },
-{
-    accessorKey: 'skip_flag',
-    header: 'กระโดด',
-    cell: ({ row }) => `${row.getValue('skip_flag')}`
-  },
-{
-    accessorKey: 'qc_bill_amount',
-    header: 'Qc [มูลค่า บิล]',
-    cell: ({ row }) => `${row.getValue('qc_bill_amount')}`
-  },
-{
-    accessorKey: 'qc_bill_datetime',
-    header: 'Qc_date_bill',
-    cell: ({ row }) => `${row.getValue('qc_bill_datetime')}`
-  },
-{
-    accessorKey: 'qc_print_count',
-    header: 'Qc พิมพ์',
-    cell: ({ row }) => `${row.getValue('qc_print_count')}`
-  },
-{
-    accessorKey: 'qc_print_datetime',
-    header: 'Qc พิมพ์เวลา',
-    cell: ({ row }) => `${row.getValue('qc_print_datetime')}`
-  },
-{
-    accessorKey: 'qc_print_code2',
-    header: 'Qc พิมพ์2',
-    cell: ({ row }) => `${row.getValue('qc_print_code2')}`
-  },
-
-]
-
-const formattedData = computed(() => {
-  return JSON.stringify(wsData.value, null, 2)
-})
-
-onMounted(() => {
-  socket.value = new WebSocket('ws://localhost:8080')
-
-  socket.value.onopen = () => {
-    console.log('✅ WebSocket Connected')
-  }
-
-  socket.value.onmessage = (event: MessageEvent) => {
-
-    try {
-      const message: ServerMessage = JSON.parse(event.data)
-      if (message.type === 'data') {
-        wsData.value = message.payload
-      }
-    } catch (err) {
-      console.error('❌ Error parsing WebSocket message:', err)
+// Columns definition with the updated interface
+const columns: TableColumn<Invoice>[] = [
+  {
+    id: 'index',
+    header: 'ลำดับที่',
+    cell: ({ row, table }) => {
+      return `${table.getRowModel().rows.indexOf(row) + 1}`
     }
-  }
-  socket.value.onerror = (error) => {
-  console.error('❗ WebSocket error:', error)
-}
-  socket.value.onclose = () => {
+  },
+  {
+    accessorKey: 'sh_running',
+    header: 'เลขที่ใบจอง',
+    cell: ({ row }) => `${row.getValue('sh_running')}`,
+  },
+  {
+    accessorKey: 'mem_code',
+    header: 'รหัสสมาชิก',
+    cell: ({ row }) => `${row.getValue('mem_code')}`,
+  },
+  {
+    accessorKey: 'mem_name',
+    header: 'นามร้าน',
+    cell: ({ row }) => `${row.getValue('mem_name')}`,
+  },
+  {
+    accessorKey: 'emp_code',
+    header: 'รหัสพนักงาน',
+    cell: ({ row }) => `${row.getValue('emp_code')}`,
+  },
+  {
+    accessorKey: 'sh_listsale',
+    header: 'จำนวนที่ขาย',
+    cell: ({ row }) => `${row.getValue('sh_listsale')}`,
+  },
+  {
+    accessorKey: 'sh_listfree',
+    header: 'จำนวนที่ให้ฟรี',
+    cell: ({ row }) => `${row.getValue('sh_listfree')}`,
+  },
+  {
+    accessorKey: 'sh_sumprice',
+    header: 'มูลค่ารวม',
+    cell: ({ row }) => `${row.getValue('sh_sumprice')}`,
+  },
+  {
+    accessorKey: 'sh_datetime',
+    header: 'วันที่ใบจอง',
+    cell: ({ row }) => `${row.getValue('sh_datetime')}`,
+  },
+  {
+    accessorKey: 'sh_print',
+    header: 'จำนวนพิมพ์',
+    cell: ({ row }) => `${row.getValue('sh_print')}`,
+  },
+  {
+    accessorKey: 'qc_invoice',
+    header: 'เลขบิล QC',
+    cell: ({ row }) => `${row.getValue('qc_invoice')}`,
+  },
+  {
+    accessorKey: 'qc_print',
+    header: 'จำนวนพิมพ์ QC',
+    cell: ({ row }) => `${row.getValue('qc_print')}`,
+  },
+  {
+    accessorKey: 'qc_timePrice',
+    header: 'วันที่พิมพ์ QC',
+    cell: ({ row }) => `${row.getValue('qc_timePrice')}`,
+  },
+
+];
+
+socket.on('connect', () => {
+  console.log('✅ WebSocket Connected')
+})
+
+socket.on('disconnect', () => {
+  console.log('🔌 WebSocket Disconnected')
+})
+
+socket.on('invoice:list', (data) => {
+  // console.log(data)
+  invoices.value = data as Invoice[];
+
+  return data;
+})
+
+// GPT code end
+onMounted(() => {
+
+  socket.emit('invoice:get', { offset: offset.value, limit: limit.value })
+  socket.on('connect', () => {
+    console.log('✅ WebSocket Connected')
+  })
+
+  socket.on('disconnect', () => {
     console.log('🔌 WebSocket Disconnected')
-  }
+  })
 })
 
-onBeforeUnmount(() => {
-  if (socket.value) {
-    socket.value.close()
-  }
+const socketStatus = computed(() => {
+  return socket.connected
 })
 
-const RefreshToken = async() => {
+function handlePreviousBtn() {
+  offset.value = offset.value - 10
+  if (offset.value <= 0) {
+    offset.value = 0
+  }
+  loadInvoices(offset.value, limit.value)
+  console.log("offset.val", offset.value)
+}
+
+function handleNextBtn() {
+
+  // offset.value = 0
+  // limit.value = 10
+
+  offset.value = offset.value + 10
+  loadInvoices(offset.value, limit.value)
+
+  console.log("offset.val", offset.value)
+}
+
+function loadInvoices(offset: number, limit: number) {
+  socket.emit('invoice:get', { offset, limit })
+
+  // output.value += `\n📤 Requesting invoices with offset: ${offset}, limit: ${limit}\n`
+}
+
+const RefreshToken = async () => {
   const refreshT = sessionStorage.getItem('refreshtoken')
   const response = await axios.post(config.public.apiBase + '/api/auth/refresh', {
     refreshToken: refreshT
-    })
+  })
   alert(JSON.stringify(response.data))
 
   sessionStorage.setItem('token', response?.data?.access_token)
   sessionStorage.setItem('refreshtoken', response?.data?.refresh_token)
 }
 
+const handlePrint = async (id: string, rowData: any) => {
+
+  try {
+    const routeData = router.resolve({ name: 'print-preview', query: { sh_running: id } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
+    console.log(routeData)
+    window.open(routeData.href, '_blank')
+
+
+    // หลังจากยิง API เสร็จ ให้ redirect ไปหน้าใหม่
+    // router.push(`/print-preview`); ///qc_invoice=${rowData.qc_invoice}
+
+  } catch (error) {
+    console.error('เกิดข้อผิดพลาดขณะพิมพ์:', error);
+  }
+
+}
 </script>
-
-
-
-
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzQ0ODA1OTMxLCJleHAiOjE3NDQ4OTIzMzF9._FTMbsPCTF8T-3KtVyvRxDy9WsIK8RFnYCN6m8Uodxo
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzQ0ODA1OTUwLCJleHAiOjE3NDQ4OTIzNTB9.qPI1FOTHmDwdedKiVVIywx-fYQ3jJiEMK6gl_3kqs8c
