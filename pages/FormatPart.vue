@@ -23,21 +23,44 @@
 
       <div class="parent">
         <div class="invoice-info">
-          <p>รหัสลูกค้า: </p>
-          <p>เลขประจำตัวผู้เสียภาษี: </p>
-          <input type="checkbox">สาขา</input>
-          <p>ชื่อร้าน: </p>
-          <p>ผู้ดูแล: </p>
+          <div class="flex justify-between">
+            <p>รหัสลูกค้า: </p>
+            <p>เลขประจำตัวผู้เสียภาษี: </p>
+            <div>
+              <input type="checkbox">สาขา</input>
+            </div>
+          </div>
+          <div class="flex justify-between">
+            <p>ชื่อร้าน: </p>
+            <p>ผู้ดูแล: </p>
+          </div>
           <p>ที่อยู่: </p>
-          <p>หมายเหตุ | |</p>
-          <p>QC |Pack </p>
+          <div>&nbsp;</div>
+          <div class="flex justify-between">
+            <p>หมายเหตุ | |</p>
+            <p>QC |Pack </p>
+          </div>
         </div>
         <div class="invoice-info2">
-          <p>วันที่: </p>
-          <p>เลขที่ใบกำกับ: </p>
-          <p>พนักงานขาย: </p>
-          <p>กำหนดการชำระ: </p> <!--หน่วยเป็นวัน 30 วัน-->
-          <p>ครบกำหนด: </p>
+          <div class="flex justify-stretch">
+            <p>วันที่: </p>
+
+          </div>
+          <div class="flex justify-stretch">
+            <p>เลขที่ใบกำกับ: </p>
+
+          </div >
+          <div class="flex justify-stretch">
+            <p>พนักงานขาย: </p>
+
+          </div >
+          <div class="flex justify-stretch">
+            <p>กำหนดการชำระ: </p> <!--หน่วยเป็นวัน 30 วัน-->
+
+          </div >
+          <div class="flex justify-stretch">
+            <p>ครบกำหนด: </p>
+          </div>
         </div>
       </div>
       <div class="flex justify-between">
@@ -48,158 +71,255 @@
           <p>วังเภสัชส่งสินค้าทุกวัน ยกเว้นวันอาทิตย์ครับ/ค่ะ</p>
         </div>
       </div>
+      <table>
+    <thead>
+      <tr>
+        <th>ที่</th>
+        <th>รหัสสินค้า</th>
+        <th>รายละเอียดสินค้า</th>
+        <th>จำนวน</th>
+        <th>หน่วย</th>
+        <th>ราคา/หน่วย</th>
+        <th>ส่วนลด</th>
+        <th>จำนวนเงิน</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="n in maxRows" :key="n">
+    <td>{{ n }}</td>
 
-      <table class="product-table">
-        <thead>
-          <tr>
-            <th>ที่</th>
-            <th>รหัสสินค้า</th>
-            <th>รายละเอียด</th>
-            <th>จำนวน</th>
-            <th>หน่วย</th>
-            <th>ราคา/หน่วย</th>
-            <th>ส่วนลด</th>
-            <th>จำนวนเงิน</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, index) in items" :key="index">
-            <td>{{ index + 1 }}</td>
-            <td>{{ item.code }}</td>
-            <td>{{ item.description }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.unit }}</td>
-            <td>{{ item.price }}</td>
-            <td>{{ item.discount }}</td>
-            <td>{{ item.total }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- รหัสสินค้า -->
+    <td>{{ getItem(n - 1)?.productId || '\u00A0' }}</td>
+
+    <!-- ชื่อสินค้า + Lot/Exp -->
+    <td>
+      <div class="product-name">
+        {{ getItem(n - 1)?.productName || '\u00A0' }}
+      </div>
+      <div class="lot-exp">
+        <template v-if="getItem(n - 1)">
+          Lot: {{ getItem(n - 1).lotNumber }} &nbsp; Exp: {{ getItem(n - 1).expiryDate }}
+        </template>
+        <template v-else>
+          &nbsp;
+        </template>
+      </div>
+    </td>
+
+    <td class="text-right">{{ getItem(n - 1)?.quantity || '\u00A0' }}</td>
+    <td>{{ getItem(n - 1)?.unit || '\u00A0' }}</td>
+    <td class="text-right">{{ formatNumber(getItem(n - 1)?.unitPrice) }}</td>
+    <td class="text-right">{{ formatNumber(getItem(n - 1)?.discount) }}</td>
+    <td class="text-right">{{ formatNumber(getItem(n - 1)?.totalAmount) }}</td>
+  </tr>
+    </tbody>
+  </table>
       <div class="footer">
-        <div class="TotalText border">ยอดเงินสุทธิ</div>
-        <div class="TotalNumTax">
-          <p>รวมเป็น: <strong>1,865.05</strong></p>
-          <p>ภาษีมูลค่าเพิ่ม 7%: <strong>130.55</strong></p>
+        <div class="TotalText border text-sm font-bold ">ยอดเงินสุทธิ</div>
+        <div class="TotalNumTax border p-1">
+          <div class="flex justify-between">
+            <p>รวมเป็น: </p>
+            <p class="text-sm font-bold">1234 </p>
+          </div>
+          <div class="flex justify-between">
+            <p>ภาษีมูลค่าเพิ่ม 7%:</p>
+            <p class="text-sm font-bold">130.55</p>
+          </div>
         </div>
-        <div class="TotalNum">
-          <p>ยอดเงินสุทธิ: <strong>1,995.60</strong></p>
+        <div class="TotalNum flex justify-between border p-1 ">
+          <p >ยอดเงินสุทธิ:</p>
+          <p class="text-sm font-bold">1,995.60</p>
         </div>
         <div class="CountPage">สำหรับลูกค้า</div>
-        <div class="AccDep">
-          <p>ผู้เสนอราคา</p>
-          <p>(ลงชื่อ)..............................</p>
-          <p>วันที่ 15/04/68</p>
+        <div class="AccDep text-sm border p-1 ">
+          <div class="flex justify-center">
+            <p>ฝ่ายบัญชี</p>
+          </div>
+          <hr />
+          <div class="flex justify-between pt-5 px-3 ">
+            <p>(</p>
+            <p>)</p>
+          </div>
+          <div class="flex justify-center text-xs">
+            <p>วันที่ 15/04/68</p>
+          </div>
         </div>
-        <div class="CheckItems">
-          <p>ผู้ตรวจสอบรายการ</p>
-          <p>(ลงชื่อ)..............................</p>
-          <p>วันที่..............</p>
+        <div class="CheckItems text-sm border p-1 ">
+          <div class="flex justify-center">
+            <p>ผู้ตรวจสอบรายการ</p>
+          </div>
+          <hr />
+          <div class="flex justify-between pt-5 px-3 ">
+            <p>(</p>
+            <p>)</p>
+          </div>
+          <div class="flex justify-center text-xs">
+            <p>วันที่ ___/___/___</p>
+          </div>
         </div>
-        <div class="Courier">
-          <p>ผู้สั่งของ</p>
-          <p>(ลงชื่อ)..............................</p>
-          <p>วันที่..............</p>
+        <div class="Courier text-sm border p-1 ">
+          <div class="flex justify-center">
+            <p>ผู้ส่งของ</p>
+          </div>
+          <hr />
+          <div class="flex justify-between pt-5 px-3 ">
+            <p>(</p>
+            <p>)</p>
+          </div>
+          <div class="flex justify-center text-xs">
+            <p>วันที่ ___/___/___</p>
+          </div>
         </div>
-        <div class="Note">
-          <p>หมายเหตุ:</p>
+        <div class="Note text-xs">
+          <p class="font-bold">หมายเหตุ:</p>
           <ul>
             <li>รับสินค้าภายใน 7 วัน หลังจากวันเสนอราคา</li>
             <li>ราคาสินค้ารวมภาษีมูลค่าเพิ่ม 7% แล้ว</li>
             <li>ราคานี้สำหรับการชำระเงินเป็นเงินสดเท่านั้น</li>
           </ul>
         </div>
-        <div class="Contact">
-          <p>ติดต่อ 08:00-18:00</p>
-          <p>K.จั๊บ:094-819-3666</p>
-          <p>086-491-5414</p>
-          <p>086-491-5416</p>
-          <p>063-525-2927</p>
-          <p>063-525-2239</p>
-          <p>063-525-2235</p>
-          <p>063-525-2234</p>
-        </div>
-        <div class="Payment">Payment</div>
-        <div class="totals">
-
-        </div>
-
-        <div class="footer">
-
-
-          <div class="signatures">
-            <div>
-
-            </div>
-            <div>
-
-            </div>
-            <div>
-
-            </div>
+        <div class="Contact text-xs">
+          <div class="flex justify-between">
+            <p>ติดต่อ 08:00-18:00</p>
+            <p>K.จั๊บ:094-819-3666</p>
           </div>
-        </div>
+          <div class="flex justify-between">
+            <p>086-491-5414</p>
+            <p>086-491-5416</p>
+          </div>
+          <div class="flex justify-between">
+            <p>063-525-2927</p>
+            <p>063-525-2239</p>
+          </div>
+          <div class="flex justify-between">
+            <p>063-525-2234</p>
+            <p>063-525-2235</p>
+          </div>
+        </div >
+        <div class="Payment">Payment</div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
+import axios from 'axios'
+import { socketprint } from "../components/socket";
+
+const config = useRuntimeConfig()
+const router = useRouter()
+
+onMounted(() => {
+
+//   socketprint.on('connect', () => {
+//     console.log('✅ WebSocket Connected')
+// })
+
+// socketprint.on('disconnect', () => {
+//     console.log('🔌 WebSocket Disconnected')
+// })
+})
+// const items = [
+// {
+//           productId: '09024002',
+//           lotNumber: 'AB510A',
+//           expiryDate: '05/03/2027',
+//           productName: 'แอมโลดิพีนแคปซูล200มก+50มลFenoterol/ใหม่070468',
+//           quantity: 3,
+//           unit: 'กล่อง',
+//           unitPrice: 210.00,
+//           discount: '-',
+//           totalAmount: 630.00,
+//         },
+//         {
+//           productId: '31020802',
+//           lotNumber: '03',
+//           expiryDate: '26/03/2571',
+//           productName: 'คูมาร์ครีม360CC48*1ลัง70บ./ป้ายใหม่280266',
+//           quantity: 6,
+//           unit: 'ขวด',
+//           unitPrice: 43.50,
+//           discount: '-',
+//           totalAmount: 261.00,
+//         },
+//         {
+//           productId: '32010507',
+//           lotNumber: 'LM0390',
+//           expiryDate: '01/08/2569',
+//           productName: 'เพอร์รานิลมิลค์แคปซูล3.5ก57บ/ใหม่251165',
+//           quantity: 12,
+//           unit: 'กล/หลอด',
+//           unitPrice: 35.90,
+//           discount: '-',
+//           totalAmount: 430.80,
+//         },
+//         {
+//           productId: '36021220',
+//           lotNumber: '24259013',
+//           expiryDate: '04/12/2569',
+//           productName: 'อีโตฟิเบรตแคปซูล100มก36บ/ใหม่100965',
+//           quantity: 12,
+//           unit: 'ขวด',
+//           unitPrice: 21.90,
+//           discount: '-',
+//           totalAmount: 262.80,
+//         },
+//         {
+//           productId: '56018804',
+//           lotNumber: '141372',
+//           expiryDate: '19/12/2569',
+//           productName: 'พาราแคป500/ขวดขาวแพ็ค10แผง*10บ/E1125',
+//           quantity: 2,
+//           unit: 'กล่อง',
+//           unitPrice: 69.00,
+//           discount: '-',
+//           totalAmount: 138.00,
+//         },
+//         {
+//           productId: '63010210-1',
+//           lotNumber: '003',
+//           expiryDate: '21/02/2571',
+//           productName: 'ยาทาแก้ปวดเมื่อย(น้ำมันมวย)36บ*12*1ข/ใหม่020365',
+//           quantity: 12,
+//           unit: 'กล่อง',
+//           unitPrice: 22.75,
+//           discount: '-',
+//           totalAmount: 273.00,
+//         },
+// ];
+
+const maxRows = 10 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
+
+// ตัวอย่างข้อมูล (อาจมาจาก API)
 const items = [
   {
-    code: '09024002',
-    description: 'เลโวโซลพิวทามอลชนิด200มก50เม็ดFenoterol/ใหม่070468\nExp: 05/03/2027',
-    quantity: 3,
+    productId: '12345678',
+    productName: 'ยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหดยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหดยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหดยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหด',
+    lotNumber: 'L001',
+    expiryDate: '2025-12-31',
+    quantity: 10,
     unit: 'กล่อง',
-    price: '210.00',
-    discount: '',
-    total: '630.00'
+    unitPrice: 100,
+    discount: 0,
+    totalAmount: 1000
   },
-  {
-    code: '31028002',
-    description: 'ดูราซาลซัสซีรัส300CC*48*1ลัง70บ/กล่องใหม่280266\nExp: 26/03/2027',
-    quantity: 6,
-    unit: 'ขวด',
-    price: '43.50',
-    discount: '',
-    total: '261.00'
-  },
-  {
-    code: '31025007',
-    description: 'ยาเด็กทารก/ละลาย/5มล5/7ขวด/ใหม่251165\nExp: 01/08/2027',
-    quantity: 12,
-    unit: 'กล่อง',
-    price: '35.90',
-    discount: '',
-    total: '430.80'
-  },
-  {
-    code: '26122002',
-    description: 'ซิงค์ออกไซด์ครีม/หลอด25กรัมใหม่109501105\nExp: 12/04/2025',
-    quantity: 12,
-    unit: 'หลอด',
-    price: '21.90',
-    discount: '',
-    total: '262.80'
-  },
-  {
-    code: '24525013',
-    description: 'เครื่องวัดความดันดิจิตอลอัตโนมัติ+10*+10หลอดใหม่1125\nExp: 19/12/2026',
-    quantity: 2,
-    unit: 'กล10หลอด',
-    price: '69.00',
-    discount: '',
-    total: '138.00'
-  },
-  {
-    code: '63010210-1',
-    description: 'หลอดแล็บพลาสติก/แยกพลาสติก2*13มมใหม่020365\nExp: 21/02/2571',
-    quantity: 12,
-    unit: 'กล่อง',
-    price: '22.75',
-    discount: '',
-    total: '273.00'
-  }
-];
+  // อาจมีข้อมูลบางแถว บางแถวเว้นไว้
+]
+
+// ฟังก์ชันช่วยดึง item ตาม index
+function getItem(index: number) {
+  return items[index] || null
+}
+
+function formatNumber(value: number | string | undefined | null): string {
+  if (!value && value !== 0) return '\u00A0' // ช่องว่าง
+  return Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
 </script>
 
 <style scoped>
@@ -232,13 +352,8 @@ const items = [
   font-weight: normal;
 }
 
-/* .invoice-info {
-    display: flex;
-    justify-content: space-between;
-  } */
-
 .product-table {
-  width: 100%;
+
   border-collapse: collapse;
 }
 
@@ -259,10 +374,11 @@ const items = [
   margin: 0;
 }
 
-.footer ul {
+/* .footer ul {
   padding-left: 20px;
   font-size: 14px;
-}
+
+} */
 
 .signatures {
   display: flex;
@@ -278,8 +394,8 @@ const items = [
 
 .parent {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-columns: repeat(12, 0.5fr);
+  grid-template-rows: auto;
   gap: 8px;
   font-size: small;
 }
@@ -293,7 +409,7 @@ const items = [
 
 .invoice-info2 {
   grid-column: span 4 / span 4;
-  grid-row: span 2 / span 2;
+  grid-row: span x;
   grid-column-start: 9;
   border: #000 solid 1px;
   padding: 8px;
@@ -302,67 +418,120 @@ const items = [
 .footer {
   display: grid;
   grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: repeat(5, 1fr);
+  grid-template-rows:  auto auto auto auto auto;
   gap: 8px;
+  border: #000; 
+  padding-top: 4px;
 }
 
 .TotalText {
-  grid-column: span 9 / span 9;
+  grid-column: span 8 / span 8;
+  
 }
 
 .TotalNumTax {
-  grid-column: span 3 / span 3;
-  grid-row: span 2 / span 2;
-  grid-column-start: 10;
+  grid-column: span 4 / span 4;
+    grid-row: span 2 / span 2;
+    grid-column-start: 9;
 }
 
 .TotalNum {
-  grid-column: span 3 / span 3;
-  grid-column-start: 10;
-  grid-row-start: 3;
+  grid-column: span 4 / span 4;
+    grid-column-start: 9;
+    grid-row-start: 3;
 }
 
 .CountPage {
-  grid-column: span 3 / span 3;
-  grid-column-start: 10;
-  grid-row-start: 4;
+  grid-column: span 4 / span 4;
+    grid-column-start: 9;
+    grid-row-start: 4;
 }
 
 .AccDep {
   grid-column: span 2 / span 2;
-  grid-column-start: 7;
-  grid-row-start: 5;
+    grid-column-start: 6;
+    grid-row-start: 5;
 }
 
 .CheckItems {
-  grid-column: span 2 / span 2;
-  grid-column-start: 9;
-  grid-row-start: 5;
+  grid-column: span 3 / span 3;
+    grid-column-start: 8;
+    grid-row-start: 5;
 }
 
 .Courier {
   grid-column: span 2 / span 2;
-  grid-column-start: 11;
-  grid-row-start: 5;
+    grid-column-start: 11;
+    grid-row-start: 5;
 }
 
 .Note {
-  grid-column: span 6 / span 6;
-  grid-row: span 2 / span 2;
-  grid-column-start: 1;
-  grid-row-start: 2;
+  grid-column: span 5 / span 5;
+    grid-row: span 2 / span 2;
+    grid-column-start: 1;
+    grid-row-start: 2;
 }
 
 .Contact {
-  grid-column: span 6 / span 6;
-  grid-row: span 2 / span 2;
-  grid-column-start: 1;
-  grid-row-start: 4;
+  grid-column: span 5 / span 5;
+    grid-row: span 2 / span 2;
+    grid-column-start: 1;
+    grid-row-start: 4;
 }
 
 .Payment {
   grid-column: span 2 / span 2;
-  grid-column-start: 8;
-  grid-row-start: 2;
+    grid-column-start: 7;
+    grid-row-start: 2;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: sans-serif;
+  font-size: 14px;
+}
+th,
+td {
+  padding-left: 10px; /* บน-ล่าง 6px | ซ้าย-ขวา 10px */
+  padding-right: 10px; /* บน-ล่าง 6px | ซ้าย-ขวา 10px */
+  text-align: left;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  padding: 6px 10px;
+  vertical-align: top;
+}
+
+
+
+tbody td {
+  border: none;
+  padding: 6px 10px;
+  vertical-align: top;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.text-right {
+  text-align: right;
+}
+.product-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* จำกัดแค่ 1 บรรทัด */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  font-weight: bold;
+  line-height: 1.4em;
+  max-height: 1.4em;
+}
+
+.lot-exp {
+  font-size: 0.85em;
+  color: #666;
+  min-height: 1.2em; /* ล็อกความสูงให้พอดีบรรทัด */
 }
 </style>

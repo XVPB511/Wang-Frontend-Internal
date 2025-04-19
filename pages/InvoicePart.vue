@@ -42,7 +42,7 @@
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
-import { socketpart } from "../components/socket";
+import { socketpart, socketprint } from "../components/socket";
 
 const config = useRuntimeConfig()
 const router = useRouter()
