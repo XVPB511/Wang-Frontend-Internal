@@ -86,7 +86,7 @@
     </thead>
     <tbody>
       <tr v-for="n in maxRows" :key="n">
-    <td>{{ n }}</td>
+    <td>{{ getItem(n - 1) ? n : '\u00A0'}}</td>
 
     <!-- รหัสสินค้า -->
     <td>{{ getItem(n - 1)?.productId || '\u00A0' }}</td>
@@ -98,7 +98,7 @@
       </div>
       <div class="lot-exp">
         <template v-if="getItem(n - 1)">
-          Lot: {{ getItem(n - 1).lotNumber }} &nbsp; Exp: {{ getItem(n - 1).expiryDate }}
+          Lot: {{ getItem(n - 1).lotNumber || '\u00A0' }} &nbsp; Exp: {{ getItem(n - 1).expiryDate || '\u00A0' }}
         </template>
         <template v-else>
           &nbsp;
@@ -107,7 +107,7 @@
     </td>
 
     <td class="text-right">{{ getItem(n - 1)?.quantity || '\u00A0' }}</td>
-    <td>{{ getItem(n - 1)?.unit || '\u00A0' }}</td>
+    <td>{{ getItem(n - 1)?.so_unit || '\u00A0' }}</td>
     <td class="text-right">{{ formatNumber(getItem(n - 1)?.unitPrice) }}</td>
     <td class="text-right">{{ formatNumber(getItem(n - 1)?.discount) }}</td>
     <td class="text-right">{{ formatNumber(getItem(n - 1)?.totalAmount) }}</td>
@@ -211,15 +211,48 @@ import { socketprint } from "../components/socket";
 const config = useRuntimeConfig()
 const router = useRouter()
 
+interface ShoppingOrderItem {
+  product_code: string;
+  product_name: string;
+  so_amount: number;
+  so_unit: string;
+  so_priceU: string;
+  so_discount: string;
+  so_sumprice: string;
+}
+
+interface invoice {
+  mem_address: string;
+  mem_village: string;
+  mem_alley: string;
+  mem_road: string;
+  subdistrict_id: string;
+  district_id: string;
+  province_id: string;
+  shop_keeper: string;
+  mem_name: string;
+  name_code: string;
+  sh_datetime: string;
+  sh_running: string;
+  emp_code: string;
+  sh_sumprice: string;
+  shopping_order: ShoppingOrderItem[];
+}
+
+const invoice = ref<invoice[]>([])
+
 onMounted(() => {
 
-//   socketprint.on('connect', () => {
-//     console.log('✅ WebSocket Connected')
-// })
+  // socketprint.emit('invoice:get', { sh_running: });
 
-// socketprint.on('disconnect', () => {
-//     console.log('🔌 WebSocket Disconnected')
-// })
+
+  socketprint.on('connect', () => {
+    console.log('✅ WebSocket Connected')
+})
+
+socketprint.on('disconnect', () => {
+    console.log('🔌 WebSocket Disconnected')
+})
 })
 // const items = [
 // {
@@ -292,25 +325,10 @@ onMounted(() => {
 
 const maxRows = 10 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
 
-// ตัวอย่างข้อมูล (อาจมาจาก API)
-const items = [
-  {
-    productId: '12345678',
-    productName: 'ยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหดยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหดยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหดยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหด',
-    lotNumber: 'L001',
-    expiryDate: '2025-12-31',
-    quantity: 10,
-    unit: 'กล่อง',
-    unitPrice: 100,
-    discount: 0,
-    totalAmount: 1000
-  },
-  // อาจมีข้อมูลบางแถว บางแถวเว้นไว้
-]
 
 // ฟังก์ชันช่วยดึง item ตาม index
 function getItem(index: number) {
-  return items[index] || null
+  return items || null
 }
 
 function formatNumber(value: number | string | undefined | null): string {
@@ -374,12 +392,6 @@ function formatNumber(value: number | string | undefined | null): string {
   margin: 0;
 }
 
-/* .footer ul {
-  padding-left: 20px;
-  font-size: 14px;
-
-} */
-
 .signatures {
   display: flex;
   justify-content: space-between;
@@ -426,7 +438,6 @@ function formatNumber(value: number | string | undefined | null): string {
 
 .TotalText {
   grid-column: span 8 / span 8;
-  
 }
 
 .TotalNumTax {
@@ -487,16 +498,14 @@ function formatNumber(value: number | string | undefined | null): string {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-family: sans-serif;
-  font-size: 14px;
+  font-family: 'Fahkwang';
+  font-size: 12px;
 }
-th,
-td {
+th {
   padding-left: 10px; /* บน-ล่าง 6px | ซ้าย-ขวา 10px */
   padding-right: 10px; /* บน-ล่าง 6px | ซ้าย-ขวา 10px */
   text-align: left;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
+  border: 1px solid #000;
   padding: 6px 10px;
   vertical-align: top;
 }
@@ -504,7 +513,8 @@ td {
 
 
 tbody td {
-  border: none;
+  border-right: 1px solid #000;
+  border-left: 1px solid #000;
   padding: 6px 10px;
   vertical-align: top;
 }
@@ -525,8 +535,8 @@ th {
   text-overflow: ellipsis;
   white-space: normal;
   font-weight: bold;
-  line-height: 1.4em;
-  max-height: 1.4em;
+  line-height: 1em;
+  max-height: 1em;
 }
 
 .lot-exp {
