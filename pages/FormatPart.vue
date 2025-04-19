@@ -85,19 +85,33 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-for="(item, index) in items" :key="index">
-        <td>{{ index + 1 }}</td>
-        <td>
-          {{ item.productId }}<br>
-        </td>
-        <td>{{ item.productName }}          Lot: {{ item.lotNumber }}<br>
-          Exp: {{ item.expiryDate }}</td>
-        <td class="text-right">{{ item.quantity }}</td>
-        <td>{{ item.unit }}</td>
-        <!-- <td class="text-right">{{ formatNumber(item.unitPrice) }}</td> -->
-        <td class="text-right">{{ item.discount }}</td>
-        <!-- <td class="text-right">{{ formatNumber(item.totalAmount) }}</td> -->
-      </tr>
+      <tr v-for="n in maxRows" :key="n">
+    <td>{{ n }}</td>
+
+    <!-- รหัสสินค้า -->
+    <td>{{ getItem(n - 1)?.productId || '\u00A0' }}</td>
+
+    <!-- ชื่อสินค้า + Lot/Exp -->
+    <td>
+      <div class="product-name">
+        {{ getItem(n - 1)?.productName || '\u00A0' }}
+      </div>
+      <div class="lot-exp">
+        <template v-if="getItem(n - 1)">
+          Lot: {{ getItem(n - 1).lotNumber }} &nbsp; Exp: {{ getItem(n - 1).expiryDate }}
+        </template>
+        <template v-else>
+          &nbsp;
+        </template>
+      </div>
+    </td>
+
+    <td class="text-right">{{ getItem(n - 1)?.quantity || '\u00A0' }}</td>
+    <td>{{ getItem(n - 1)?.unit || '\u00A0' }}</td>
+    <td class="text-right">{{ formatNumber(getItem(n - 1)?.unitPrice) }}</td>
+    <td class="text-right">{{ formatNumber(getItem(n - 1)?.discount) }}</td>
+    <td class="text-right">{{ formatNumber(getItem(n - 1)?.totalAmount) }}</td>
+  </tr>
     </tbody>
   </table>
       <div class="footer">
@@ -192,20 +206,20 @@
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
-import { socketpart } from "../components/socket";
+import { socketprint } from "../components/socket";
 
 const config = useRuntimeConfig()
 const router = useRouter()
 
 onMounted(() => {
-  
-  socketpart.on('connect', () => {
-    console.log('✅ WebSocket Connected')
-})
 
-socketpart.on('disconnect', () => {
-    console.log('🔌 WebSocket Disconnected')
-})
+//   socketprint.on('connect', () => {
+//     console.log('✅ WebSocket Connected')
+// })
+
+// socketprint.on('disconnect', () => {
+//     console.log('🔌 WebSocket Disconnected')
+// })
 })
 // const items = [
 // {
@@ -276,6 +290,36 @@ socketpart.on('disconnect', () => {
 //         },
 // ];
 
+const maxRows = 10 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
+
+// ตัวอย่างข้อมูล (อาจมาจาก API)
+const items = [
+  {
+    productId: '12345678',
+    productName: 'ยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหดยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหดยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหดยา Aดหฟกหื่หด่ห่กดสห่ดาห่ดสกหด',
+    lotNumber: 'L001',
+    expiryDate: '2025-12-31',
+    quantity: 10,
+    unit: 'กล่อง',
+    unitPrice: 100,
+    discount: 0,
+    totalAmount: 1000
+  },
+  // อาจมีข้อมูลบางแถว บางแถวเว้นไว้
+]
+
+// ฟังก์ชันช่วยดึง item ตาม index
+function getItem(index: number) {
+  return items[index] || null
+}
+
+function formatNumber(value: number | string | undefined | null): string {
+  if (!value && value !== 0) return '\u00A0' // ช่องว่าง
+  return Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
 </script>
 
 <style scoped>
@@ -448,8 +492,21 @@ table {
 }
 th,
 td {
-  border: 1px solid #ddd;
+  padding-left: 10px; /* บน-ล่าง 6px | ซ้าย-ขวา 10px */
+  padding-right: 10px; /* บน-ล่าง 6px | ซ้าย-ขวา 10px */
   text-align: left;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  padding: 6px 10px;
+  vertical-align: top;
+}
+
+
+
+tbody td {
+  border: none;
+  padding: 6px 10px;
+  vertical-align: top;
 }
 
 th {
@@ -459,5 +516,22 @@ th {
 
 .text-right {
   text-align: right;
+}
+.product-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 1; /* จำกัดแค่ 1 บรรทัด */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+  font-weight: bold;
+  line-height: 1.4em;
+  max-height: 1.4em;
+}
+
+.lot-exp {
+  font-size: 0.85em;
+  color: #666;
+  min-height: 1.2em; /* ล็อกความสูงให้พอดีบรรทัด */
 }
 </style>
