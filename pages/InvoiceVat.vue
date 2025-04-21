@@ -1,37 +1,62 @@
 <template>
-    <div class="bg-gray-500 flex-1 flex flex-col">
-        <div class="bg-white mx-3 mt-3 flex-1 text-black border-t-3 border-sky-500">
-            <div class="flex justify-between p-2">
-                รายการใบกำกับสินค้า/Part
-                <div class="flex justify-between ">
-                    <div class="pr-1">
-                        <input type="id" class="border rounded-l-md" placeholder="so_running" />
-                        <button type="submit" class="border rounded-r-md">ค้นหา</button>
-                    </div>
-                    <div class="rounded-md">
-                        <input type="date" class="border rounded-l-md" placeholder="so_running" />
-                        <button type="submit" class="border border-gray rounded-r-md">ค้นหา</button>
-                    </div>
-                </div>
+    <div class="bg-gray-100 min-h-screen p-4">
+      <div class="bg-white rounded-2xl shadow-lg p-6 space-y-4">
+        <div class="flex items-center justify-between border-b pb-4">
+          <h1 class="text-xl font-semibold text-sky-600">📄 รายการใบกำกับสินค้า</h1>
+  
+          <div class="flex space-x-2">
+            <div class="flex">
+              <input
+                type="text"
+                placeholder="เลขที่ใบจอง (so_running)"
+                class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
+              />
+              <button class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600">ค้นหา</button>
             </div>
-            <hr />
-            <p>
-                socket status: {{ socketStatus }}
-            </p>
-            <div class="flex justify-end p-3">
-                <input type="id" class="w-sm px-4 py-2 border rounded-md "
-                    placeholder="สแกน หมายเหตุ เลข เพื่อสั่งพิมพ์บิลใหม่" />
+            <div class="flex">
+              <input
+                type="date"
+                class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
+              />
+              <button class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600">ค้นหา</button>
             </div>
-            <div class="flex justify-end pr-5 space-x-4">
-                <button @click="handlePreviousBtn" class="border p-1 rounded-md">&lt;</button>
-                <button @click="handleNextBtn" class="border p-1 rounded-md">&gt;</button>
-            </div>
-            <div>
-                <UTable :data="invoices" class="text-black" :columns="columns" :enable-column-resizing="true" />
-            </div>
+          </div>
         </div>
+  
+        <div class="flex justify-end">
+          <input
+            type="text"
+            placeholder="🔍 สแกน หมายเหตุ เลข เพื่อสั่งพิมพ์บิลใหม่"
+            class="border border-gray-300 w-96 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
+          />
+        </div>
+  
+        <div class="flex justify-end space-x-2">
+          <button
+            @click="handlePreviousBtn"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md"
+          >
+            ⬅
+          </button>
+          <button
+            @click="handleNextBtn"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md"
+          >
+            ➡
+          </button>
+        </div>
+  
+        <div>
+          <UTable
+            :data="invoices"
+            class="text-black"
+            :columns="columns"
+            :enable-column-resizing="true"
+          />
+        </div>
+      </div>
     </div>
-</template>
+  </template>
 
 <script setup lang="ts">
 
@@ -103,13 +128,6 @@ const invoices = ref<Invoice[]>([])
 
 // Columns definition with the updated interface
 const columns: TableColumn<Invoice>[] = [
-    {
-        id: 'index',
-        header: 'ลำดับที่',
-        cell: ({ row, table }) => {
-            return `${table.getRowModel().rows.indexOf(row) + 1}`
-        }
-    },
     {
         id: 'index',
         header: 'ลำดับที่',
