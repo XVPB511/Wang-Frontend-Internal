@@ -1,23 +1,29 @@
 <template>
-  
-  <div class="min-h-screen bg-white">
-    <div class="quotation-container ">
-      <div class="">
-        <h2 class="text-lg font-bold">บริษัท วังเภสัชฟาร์มาซูติคอล จำกัด (สำนักงานใหญ่)</h2>
-        <p class="text-sm">เลขที่ 23 ซ.พัฒโน ต.หาดใหญ่ อ.หาดใหญ่ จ.สงขลา 90110</p>
-        <p class="text-sm">โทร. 074-366681-4 แฟกซ์ 074-238629</p>
-        <p class="text-sm">เลขประจำตัวผู้เสียภาษี 0905538001557</p>
-      </div>
 
-      <div class="meta flex justify-between ">
+  <div class="min-h-screen bg-white">
+    <div v-if="getItem(0)" class="quotation-container ">
+      <div class="flex justify-between">
+        <div class="">
+          <h2 class="text-lg font-bold">บริษัท วังเภสัชฟาร์มาซูติคอล จำกัด (สำนักงานใหญ่)</h2>
+          <p class="text-sm">เลขที่ 23 ซ.พัฒโน ต.หาดใหญ่ อ.หาดใหญ่ จ.สงขลา 90110</p>
+          <p class="text-sm">โทร. 074-366681-4 แฟกซ์ 074-238629</p>
+          <p class="text-sm">เลขประจำตัวผู้เสียภาษี 0905538001557</p>
+        </div>
+        <div class="center">
+          <p class="flex justify-center font-bold">ต้นฉบับ</p>
+          <p class="flex justify-center font-bold">ORIGINAL</p>
+          <p class="flex justify-center text-xs">เอกสารออกเป็นชุด</p>
+        </div>
+      </div>
+      <div class="meta flex justify-evenly ">
         <div class="pl-8 text-sm font-normal">
           <QrcodeVue :value="`${getItem(0)?.sh_running || ''}/${getItem(0)?.sh_sumprice || ''}`" :size="75"
             :level="'H'" />
           <p class="flex justify-center">Checking No.</p>
         </div>
         <div class="justify-center text-base font-bold">
-          <p>ใบเสนอราคา</p>
-          <p>Quotation</p>
+          <p class="flex justify-center">ใบส่งสินค้า / ใบกำกับภาษี</p>
+          <p>DELIVERY ORDER / TAX INVOICE</p>
         </div>
         <div class="pr-8 text-sm font-normal">
           <VueBarcode v-if="getItem(0).sh_running" :value="String(getItem(0).sh_running)" format="CODE128" :height="40"
@@ -39,7 +45,7 @@
             <p>ชื่อร้าน: {{ getItem(0)?.mem_name }}</p>
             <p>ผู้ดูแล: {{ getItem(0)?.shop_keeper }}</p>
           </div>
-          <p>ที่อยู่:  {{ getItem(0)?.mem_address }}, {{ getItem(0)?.mem_village }}, {{ getItem(0)?.mem_alley }}, {{
+          <p>ที่อยู่: {{ getItem(0)?.mem_address }}, {{ getItem(0)?.mem_village }}, {{ getItem(0)?.mem_alley }}, {{
             getItem(0)?.mem_road }}, {{ getItem(0)?.subdistrict_id }}, {{ getItem(0)?.district_id }}, {{
               getItem(0)?.province_id }}</p>
           <div>&nbsp;</div>
@@ -89,7 +95,7 @@
       <table>
         <thead>
           <tr class="text-xs ">
-          <th>ที่</th>
+            <th>ที่</th>
             <th>รหัสสินค้า</th>
             <th>รายละเอียดสินค้า</th>
             <th>จำนวน</th>
@@ -137,12 +143,14 @@
         </tbody>
       </table>
       <div class="footer">
-        <div class="TotalText border text-sm font-bold ">ยอดเงินสุทธิ: {{ bahtText(Number(getItem(0)?.sh_sumprice)) }}</div>
+        <div class="TotalText border text-sm font-bold ">ยอดเงินสุทธิ: {{ bahtText(Number(getItem(0)?.sh_sumprice)) }}
+        </div>
         <div class="TotalNumTax border p-1 text-sm ">
           <div class="flex justify-between">
             <p>รวมเป็น: </p>
             <p class="font-bold">{{ (Number(getItem(0)?.sh_sumprice) - Number(getItem(0)?.sh_sumprice) *
-              0.07).toFixed(2) }}</p>
+              0.07).toFixed(2) }}
+            </p>
           </div>
           <div class="flex justify-between">
             <p>ภาษีมูลค่าเพิ่ม 7%:</p>
@@ -154,7 +162,7 @@
           <p class="text-sm font-bold">{{ (Number(getItem(0)?.sh_sumprice)).toFixed(2) }}</p>
         </div>
         <div class="CountPage text-sm ">
-          <p class="flex justify-center">สำหรับลูกค้า [{{  }}/{{ pages }}]</p> <!--จำนวนหน้า -->
+          <p class="flex justify-center">สำหรับลูกค้า [{{ 2 }}/{{ 2 }}]</p> <!--จำนวนหน้า -->
         </div>
         <div class="AccDep text-sm border p-1 ">
           <div class="flex justify-center">
@@ -166,11 +174,7 @@
             <p>)</p>
           </div>
           <div class="flex justify-center text-xs">
-            <p>วันที่ {{ new Date(getItem(0)?.sh_datetime).toLocaleDateString("th-TH", {
-              year: '2-digit',
-              month: '2-digit',
-              day: '2-digit'
-            }) }}</p>
+            <p>วันที่ 15/04/68</p>
           </div>
         </div>
         <div class="CheckItems text-sm border p-1 ">
@@ -201,10 +205,12 @@
         </div>
         <div class="Note text-xs">
           <p class="font-bold">หมายเหตุ:</p>
-          <ul>
-            <li>รับสินค้าภายใน 7 วัน หลังจากวันเสนอราคา</li>
-            <li>ราคาสินค้ารวมภาษีมูลค่าเพิ่ม 7% แล้ว</li>
-            <li>ราคานี้สำหรับการชำระเงินเป็นเงินสดเท่านั้น</li>
+          <ul class="font-bold text-[8px]">
+            <li>เรียนท่านลูกค้า อำเภทเมืองสงขลา สิงหนคร และสทิงพระ ผู้มีอุปการะคุณทุกท่าน</li>
+            <li>วังเภสัชได้ปรับปรุงบริการ</li>
+            <li>ออเดอร์เวลา 15:01 - 09:00 น. จัดส่งถึงท่านก่อน 13:00 น.</li>
+            <li>ออเดอร์เวลา 09:01 - 15:00 น. จัดส่งถึงท่านก่อน 19:00 น.</li>
+            <li>ติชมบริการ ข้อเสนอแนะ 094-819-3666 K.จั๊บ</li>
           </ul>
         </div>
         <div class="Contact text-xs">
@@ -238,16 +244,28 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, computed, watch, defineProps } from 'vue'
-import type { TableColumn } from '@nuxt/ui'
+import { onMounted, onBeforeUnmount, ref, computed, watch, defineProps, nextTick } from 'vue'
 import axios, { formToJSON } from 'axios'
 import { socketprint } from "../components/socket";
 import QrcodeVue from "qrcode.vue";
+import { useRouter } from 'vue-router'
 import VueBarcode from 'vue3-barcode'
 
 const config = useRuntimeConfig()
 const router = useRouter()
 const maxRows = 15 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
+// const app = createApp({});
+
+// if (VueBarcode.name) {
+//   app.component(VueBarcode.name, VueBarcode);
+// }
+
+const code1 = '123456789012'
+const barcodeOptions = ref({
+  format: 'CODE128', // กำหนดรูปแบบของบาร์โค้ด
+  width: 1.2, // ความกว้างของบาร์โค้ด
+  height: 40, // ความสูงของบาร์โค้ด
+})
 
 // รับ props จากแม่
 const props = defineProps<{
@@ -259,12 +277,14 @@ const emit = defineEmits(['pages-calculated'])
 // คำนวณจำนวนหน้า (เช่น หน้า 10 รายการ)
 const pages = computed(() => Math.ceil(props.productCount / maxRows))
 
+
 // ทุกครั้งที่จำนวนเปลี่ยน → emit ไปหาแม่
 watch(pages, (newPages) => {
   emit('pages-calculated', newPages)
 }, { immediate: true }) // ให้ส่งทันทีตอน mount
-
+// console.log(sumPriceBarcode.value)
 onMounted(() => {
+
   socketprint.on('connect', () => {
     console.log('✅ WebSocket Connected')
   })
@@ -342,7 +362,6 @@ onMounted(() => {
 //   }
 // ]
 
-
   interface Invoice {
     mem_address: string;
     mem_village: string;
@@ -375,11 +394,22 @@ function getItem(index: number) {
   return invoices.value[index] || null
 }
 
-// ฟังก์ชันช่วยดึง item ตาม index
+
+// function calculatePages(itemsLength: number, maxRows: number): number {
+//   let n = 1;
+//   while (itemsLength > maxRows) {
+//     itemsLength -= maxRows;
+//     n += 1;
+//   }
+//   return n;
+// }
+// const p = computed(() => Math.ceil(invoices.length / maxRows))
+// console.log(invoices.shopping_order.length)
+
+
 // function getItem(index: number) {
 //   return invoices[index] || null
 // }
-
 
 function formatNumber(value: number | string | undefined | null): string {
   if (!value && value !== 0) return '\u00A0' // ช่องว่าง
@@ -450,6 +480,7 @@ function bahtText(amount: number): string {
   background: white;
   color: #000
 }
+
 @media print {
   .page-break {
     page-break-before: always;

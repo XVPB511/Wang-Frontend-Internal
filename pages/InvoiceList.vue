@@ -9,14 +9,14 @@
             <input
               type="text"
               placeholder="เลขที่ใบจอง (so_running)"
-              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300"
+              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
             />
             <button class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600">ค้นหา</button>
           </div>
           <div class="flex">
             <input
               type="date"
-              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300"
+              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
             />
             <button class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600">ค้นหา</button>
           </div>
@@ -27,7 +27,7 @@
         <input
           type="text"
           placeholder="🔍 สแกน หมายเหตุ เลข เพื่อสั่งพิมพ์บิลใหม่"
-          class="border w-96 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300"
+          class="border border-gray-300 w-96 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
         />
       </div>
 
@@ -253,3 +253,18 @@ const handlePrint = async (id: string, rowData: any) => {
 
 }
 </script>
+<!-- <style>
+  @media print {
+    input[type="text"] {
+      color: black !important;
+      -webkit-text-fill-color: black !important; /* สำหรับ Safari */
+    }
+
+    /* หากต้องการให้ปุ่มเป็นขาว-ดำด้วย */
+    button {
+      background: none !important;
+      color: black !important;
+      border: 1px solid black !important;
+    }
+  } 
+</style> -->
