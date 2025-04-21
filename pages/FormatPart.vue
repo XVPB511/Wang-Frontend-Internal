@@ -1,5 +1,4 @@
 <template>
-  
   <div class="min-h-screen bg-white">
     <div class="quotation-container ">
       <div class="">
@@ -8,7 +7,6 @@
         <p class="text-sm">โทร. 074-366681-4 แฟกซ์ 074-238629</p>
         <p class="text-sm">เลขประจำตัวผู้เสียภาษี 0905538001557</p>
       </div>
-
       <div class="meta flex justify-between ">
         <div class="pl-8 text-sm font-normal">
           <QrcodeVue :value="`${getItem(0)?.sh_running || ''}/${getItem(0)?.sh_sumprice || ''}`" :size="75"
@@ -20,10 +18,10 @@
           <p>Quotation</p>
         </div>
         <div class="pr-8 text-sm font-normal">
-          <VueBarcode v-if="getItem(0).sh_running" :value="String(getItem(0).sh_running)" format="CODE128" :height="40"
-            :width="1.2" :display-value="false" />
+          <BarcodeDisplay1 :value="getItem(0).sh_running" />
+          <!-- <BarcodeDisplay2 :value="getItem(0).sh_sumprice" /> -->
           <p class="flex justify-center">Invoice No.</p>
-        </div>
+        </div> 
       </div>
 
       <div class="parent">
@@ -39,7 +37,7 @@
             <p>ชื่อร้าน: {{ getItem(0)?.mem_name }}</p>
             <p>ผู้ดูแล: {{ getItem(0)?.shop_keeper }}</p>
           </div>
-          <p>ที่อยู่:  {{ getItem(0)?.mem_address }}, {{ getItem(0)?.mem_village }}, {{ getItem(0)?.mem_alley }}, {{
+          <p>ที่อยู่: {{ getItem(0)?.mem_address }}, {{ getItem(0)?.mem_village }}, {{ getItem(0)?.mem_alley }}, {{
             getItem(0)?.mem_road }}, {{ getItem(0)?.subdistrict_id }}, {{ getItem(0)?.district_id }}, {{
               getItem(0)?.province_id }}</p>
           <div>&nbsp;</div>
@@ -89,7 +87,7 @@
       <table>
         <thead>
           <tr class="text-xs ">
-          <th>ที่</th>
+            <th>ที่</th>
             <th>รหัสสินค้า</th>
             <th>รายละเอียดสินค้า</th>
             <th>จำนวน</th>
@@ -137,7 +135,8 @@
         </tbody>
       </table>
       <div class="footer">
-        <div class="TotalText border text-sm font-bold ">ยอดเงินสุทธิ: {{ bahtText(Number(getItem(0)?.sh_sumprice)) }}</div>
+        <div class="TotalText border text-sm font-bold ">ยอดเงินสุทธิ: {{ bahtText(Number(getItem(0)?.sh_sumprice)) }}
+        </div>
         <div class="TotalNumTax border p-1 text-sm ">
           <div class="flex justify-between">
             <p>รวมเป็น: </p>
@@ -154,7 +153,7 @@
           <p class="text-sm font-bold">{{ (Number(getItem(0)?.sh_sumprice)).toFixed(2) }}</p>
         </div>
         <div class="CountPage text-sm ">
-          <p class="flex justify-center">สำหรับลูกค้า [{{  }}/{{ pages }}]</p> <!--จำนวนหน้า -->
+          <p class="flex justify-center">สำหรับลูกค้า [{{ }}/{{ pages }}]</p> <!--จำนวนหน้า -->
         </div>
         <div class="AccDep text-sm border p-1 ">
           <div class="flex justify-center">
@@ -226,15 +225,15 @@
           </div>
         </div>
         <div class="Payment text-sm ">
-          <VueBarcode v-if="getItem(0).sh_sumprice" :value="String(getItem(0).sh_sumprice)" format="CODE128"
-            :height="40" :width="1.2" :display-value="false" />
+          <!-- <VueBarcode v-if="getItem(0).sh_sumprice" :value="String(getItem(0).sh_sumprice)" format="CODE128"
+            :height="40" :width="1.2" :display-value="false" :key="'barcode-' + getItem(0).sh_sumprice"/> -->
 
           <p class="flex justify-center">Payment</p>
         </div>
       </div>
     </div>
   </div>
-  <div class="page-break" />
+  <!-- <div class="page-break" /> -->
 </template>
 
 <script setup lang="ts">
@@ -243,12 +242,22 @@ import type { TableColumn } from '@nuxt/ui'
 import axios, { formToJSON } from 'axios'
 import { socketprint } from "../components/socket";
 import QrcodeVue from "qrcode.vue";
-import VueBarcode from 'vue3-barcode'
+import BarcodeDisplay1 from "~/components/BarcodeDisplay1.vue";
+import BarcodeDisplay2 from '~/components/BarcodeDisplay2.vue';
+import { useRoute } from 'vue-router';
 
 const config = useRuntimeConfig()
-const router = useRouter()
+const router = useRoute()
 const maxRows = 15 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
-
+const sh_running = router.query.sh_running as string
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTIxODU5OSwiZXhwIjoxNzQ1MjU0NTk5fQ.Oj0amNzFpbPxXC9Jr39-Vfr336tnjrXqsozXgovX52Q"
+const dataPrint = await axios.get(`https://6009-1-46-31-219.ngrok-free.app/api/invoice/print/${sh_running}`,{
+  headers: {
+      Authorization: `Bearer ${token}`
+  }
+})
+console.log(sh_running)
+console.log('data : ',dataPrint.data)
 // รับ props จากแม่
 const props = defineProps<{
   productCount: number
@@ -275,110 +284,110 @@ onMounted(() => {
 })
 
 // ตัวอย่างข้อมูล (อาจมาจาก API)
-// const invoices = [
-//   {
-//     mem_address: "123/1",
-//     mem_village: "Pruksa Village",
-//     mem_alley: "Soi 5",
-//     mem_road: "Suksawat Road",
-//     subdistrict_id: "90110",
-//     district_id: "Hat Yai",
-//     province_id: "Song Khla",
-//     shop_keeper: "Somchai",
-//     mem_name: "Somchai Pharmacy",
-//     name_code: "MB0004",
-//     sh_datetime: "2025-04-17T10:00:00.000Z",
-//     sh_running: "SH000001",
-//     emp_code: "EMP001",
-//     sh_sumprice: "450.00",
-//     shopping_order: [
-//       {
-//         product_code: "PROD001",
-//         product_name: " 500mg",
-//         so_amount: 1,
-//         so_unit: "box",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
-//       {
-//         product_code: "PROD002",
-//         product_name: "fesf",
-//         so_amount: 1,
-//         so_unit: "bottle",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
-//       {
-//         product_code: "PROD003",
-//         product_name: "-  1000mg",
-//         so_amount: 1,
-//         so_unit: "box",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
-//       {
-//         product_code: "PROD001",
-//         product_name: " 500mg",
-//         so_amount: 1,
-//         so_unit: "box",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
-//       {
-//         product_code: "PROD002",
-//         product_name: "fesf",
-//         so_amount: 1,
-//         so_unit: "bottle",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
+const invoices = [
+  {
+    mem_address: "123/1",
+    mem_village: "Pruksa Village",
+    mem_alley: "Soi 5",
+    mem_road: "Suksawat Road",
+    subdistrict_id: "90110",
+    district_id: "Hat Yai",
+    province_id: "Song Khla",
+    shop_keeper: "Somchai",
+    mem_name: "Somchai Pharmacy",
+    name_code: "MB0004",
+    sh_datetime: "2025-04-17T10:00:00.000Z",
+    sh_running: "SH000001",
+    emp_code: "EMP001",
+    sh_sumprice: "450.00",
+    shopping_order: [
+      {
+        product_code: "PROD001",
+        product_name: " 500mg",
+        so_amount: 1,
+        so_unit: "box",
+        so_priceU: "150.00",
+        so_discount: "0.00",
+        so_sumprice: "150.00"
+      },
+      {
+        product_code: "PROD002",
+        product_name: "fesf",
+        so_amount: 1,
+        so_unit: "bottle",
+        so_priceU: "150.00",
+        so_discount: "0.00",
+        so_sumprice: "150.00"
+      },
+      {
+        product_code: "PROD003",
+        product_name: "-  1000mg",
+        so_amount: 1,
+        so_unit: "box",
+        so_priceU: "150.00",
+        so_discount: "0.00",
+        so_sumprice: "150.00"
+      },
+      {
+        product_code: "PROD001",
+        product_name: " 500mg",
+        so_amount: 1,
+        so_unit: "box",
+        so_priceU: "150.00",
+        so_discount: "0.00",
+        so_sumprice: "150.00"
+      },
+      {
+        product_code: "PROD002",
+        product_name: "fesf",
+        so_amount: 1,
+        so_unit: "bottle",
+        so_priceU: "150.00",
+        so_discount: "0.00",
+        so_sumprice: "150.00"
+      },
 
-//     ]
-//   }
-// ]
-
-
-  interface Invoice {
-    mem_address: string;
-    mem_village: string;
-    mem_alley: string;
-    mem_road: string;
-    subdistrict_id: string;
-    district_id: string;
-    province_id: string;
-    shop_keeper: string;
-    mem_name: string;
-    name_code: string;
-    sh_datetime: string;
-    sh_running: string;
-    emp_code: string;
-    sh_sumprice: number;
-    shopping_order: ShoppingOrder[];
+    ]
   }
-  interface ShoppingOrder {
-  product_code: string;
-    product_name: string;
-    so_amount: number;
-    so_unit: string;
-    so_priceU: number;
-    so_discount: number;
-    so_sumprice: number;
-}
-const invoices = ref<Invoice[]>([])
+]
+
+
+//   interface Invoice {
+//     mem_address: string;
+//     mem_village: string;
+//     mem_alley: string;
+//     mem_road: string;
+//     subdistrict_id: string;
+//     district_id: string;
+//     province_id: string;
+//     shop_keeper: string;
+//     mem_name: string;
+//     name_code: string;
+//     sh_datetime: string;
+//     sh_running: string;
+//     emp_code: string;
+//     sh_sumprice: number;
+//     shopping_order: ShoppingOrder[];
+//   }
+//   interface ShoppingOrder {
+//   product_code: string;
+//     product_name: string;
+//     so_amount: number;
+//     so_unit: string;
+//     so_priceU: number;
+//     so_discount: number;
+//     so_sumprice: number;
+// }
+// const invoices = ref<Invoice[]>([])
+// // ฟังก์ชันช่วยดึง item ตาม index
+// function getItem(index: number) {
+//   return invoices.value[index] || null
+// }
+
 // ฟังก์ชันช่วยดึง item ตาม index
 function getItem(index: number) {
-  return invoices.value[index] || null
+  return invoices[index] || null
 }
-
-// ฟังก์ชันช่วยดึง item ตาม index
-// function getItem(index: number) {
-//   return invoices[index] || null
-// }
 
 
 function formatNumber(value: number | string | undefined | null): string {
@@ -450,6 +459,7 @@ function bahtText(amount: number): string {
   background: white;
   color: #000
 }
+
 @media print {
   .page-break {
     page-break-before: always;

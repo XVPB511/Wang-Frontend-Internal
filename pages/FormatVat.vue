@@ -260,29 +260,23 @@ const maxRows = 15 // จำนวนแถวที่ต้องการแ�
 //   app.component(VueBarcode.name, VueBarcode);
 // }
 
-const code1 = '123456789012'
-const barcodeOptions = ref({
-  format: 'CODE128', // กำหนดรูปแบบของบาร์โค้ด
-  width: 1.2, // ความกว้างของบาร์โค้ด
-  height: 40, // ความสูงของบาร์โค้ด
-})
 
-// รับ props จากแม่
-const props = defineProps<{
-  productCount: number
-}>()
-// สร้าง emit เพื่อส่งข้อมูลกลับ
-const emit = defineEmits(['pages-calculated'])
+// // รับ props จากแม่
+// const props = defineProps<{
+//   productCount: number
+// }>()
+// // สร้าง emit เพื่อส่งข้อมูลกลับ
+// const emit = defineEmits(['pages-calculated'])
 
-// คำนวณจำนวนหน้า (เช่น หน้า 10 รายการ)
-const pages = computed(() => Math.ceil(props.productCount / maxRows))
+// // คำนวณจำนวนหน้า (เช่น หน้า 10 รายการ)
+// const pages = computed(() => Math.ceil(props.productCount / maxRows))
 
 
-// ทุกครั้งที่จำนวนเปลี่ยน → emit ไปหาแม่
-watch(pages, (newPages) => {
-  emit('pages-calculated', newPages)
-}, { immediate: true }) // ให้ส่งทันทีตอน mount
-// console.log(sumPriceBarcode.value)
+// // ทุกครั้งที่จำนวนเปลี่ยน → emit ไปหาแม่
+// watch(pages, (newPages) => {
+//   emit('pages-calculated', newPages)
+// }, { immediate: true }) // ให้ส่งทันทีตอน mount
+// // console.log(sumPriceBarcode.value)
 onMounted(() => {
 
   socketprint.on('connect', () => {
