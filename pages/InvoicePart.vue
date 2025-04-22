@@ -67,7 +67,7 @@
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
-import { socketpart, socketprint } from "../components/socket";
+import { socketpart } from "../components/socket";
 
 const config = useRuntimeConfig()
 const router = useRouter()
@@ -140,20 +140,20 @@ const columns: TableColumn<Invoice>[] = [
         cell: ({ row }) => `${row.getValue('sh_running')}`,
     },
     {
-        accessorKey: 'mem_code',
-        header: 'รหัสสมาชิก',
-        cell: ({ row }) => `${row.getValue('mem_code')}`,
-    },
-    {
-        accessorKey: 'mem_name',
-        header: 'นามร้าน',
-        cell: ({ row }) => `${row.getValue('mem_name')}`,
-    },
-    {
-        accessorKey: 'emp_code',
-        header: 'รหัสพนักงาน',
-        cell: ({ row }) => `${row.getValue('emp_code')}`,
-    },
+    accessorKey: 'mem_code',
+    header: 'รหัสสมาชิก',
+    cell: ({ row }) => `${row.original.members?.mem_code ?? '-'}`,
+  },
+  {
+    accessorKey: 'mem_name',
+    header: 'นามร้าน',
+    cell: ({ row }) => `${row.original.members?.mem_name ?? '-'}`,
+  },
+  {
+    accessorKey: 'emp_code',
+    header: 'รหัสพนักงาน',
+    cell: ({ row }) => `${row.original.members?.emp_code ?? '-'}`,
+  },
     {
         accessorKey: 'sh_listsale',
         header: 'จำนวนที่ขาย',
@@ -246,7 +246,7 @@ onMounted(() => {
                 const routeData = router.resolve({ name: 'FormatPart', query: { sh_running: toPrint.sh_running } })
                 console.log("routeData ", routeData)
                 console.log("process.server", import.meta.server)
-                console.log("process.client", import.meta.client) // import.meta.client = true 
+                console.log("process.client", import.meta.client)
                 window.open(routeData.href, '_blank')
                 socketpart.emit('invoice:printed', { sh_running: invoices.value[0].sh_running });
             }

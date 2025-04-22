@@ -47,7 +47,7 @@ onMounted(async () => {
     console.log(res.data)
     products.value = await res.data
     window.print(); //เหลือแต่ให้มัน Enter auto
-    localStorage.removeItem("isPrinting")
+    localStorage.setItem('isPrinting', 'false')
 
     window.close();
   } catch (err) {

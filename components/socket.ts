@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const URL = 'https://6009-1-46-31-219.ngrok-free.app';
+const URL = 'http://localhost:3002';
 // const token = sessionStorage.getItem("token")
 const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTIxMTk0OCwiZXhwIjoxNzQ1MjQ3OTQ4fQ.MDfEpKlapaGTFkjZ1ntBqv7bEMubCyaLfeAeFcghASc"
 console.log("token ", token)

@@ -1,6 +1,6 @@
-<!-- components/BarcodeDisplay.vue -->
+components/BarcodeDisplay.vue
 <template>
-    <VueBarcode v-if="value" :value="String(value)" format="CODE128" :height="40" :width="1.2" :display-value="true"
+    <VueBarcode v-if="value" :value="String(value)" format="CODE128" :height="35" :width="1.2" :display-value="false"
         :key="'barcode-' + value" />
 </template>
 
