@@ -1,6 +1,5 @@
 <template>
-
-  <div class="min-h-screen bg-white">
+  <div v-if="invoices" class="min-h-screen bg-white">
     <div v-for="page in pages" class="quotation-container">
       <div class="flex justify-between">
         <div class="">
@@ -210,7 +209,7 @@
         <div class="Note text-xs">
           <p class="font-bold">หมายเหตุ:</p>
           <ul class="font-bold text-[8px]">
-            <li>เรียนท่านลูกค้า อำเภทเมืองสงขลา สิงหนคร และสทิงพระ ผู้มีอุปการะคุณทุกท่าน</li>
+            <li>เรียนท่านลูกค้า อำเภอเมืองสงขลา สิงหนคร และสทิงพระ ผู้มีอุปการะคุณทุกท่าน</li>
             <li>วังเภสัชได้ปรับปรุงบริการ</li>
             <li>ออเดอร์เวลา 15:01 - 09:00 น. จัดส่งถึงท่านก่อน 13:00 น.</li>
             <li>ออเดอร์เวลา 09:01 - 15:00 น. จัดส่งถึงท่านก่อน 19:00 น.</li>
@@ -252,40 +251,64 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, computed, watch, defineProps, nextTick } from 'vue'
-import axios, { formToJSON } from 'axios'
+import { onMounted, ref} from 'vue'
+import axios from 'axios'
 import QrcodeVue from "qrcode.vue";
 import { useRoute } from 'vue-router'
 import { VBarcode } from "vbarcode";
 
-let Barcode = ref(false)
-// export default {
-//   components: {
-//     BarcodeDisplay1,
-//   },
-// };
-
 const router = useRoute()
-const maxRows = 15 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
-const sh_running = router.query.sh_running as string 
+const maxRows = 15
+const pages = ref(0) // Initialize pages as a reactive property
+const sh_running = router.query.sh_running as string
+const maxRetry = 3
+const retryDelay = 1000 
+const retryCount = ref(0)
+
+
 console.log(sh_running)
 const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTI5ODMwMCwiZXhwIjoxNzQ1MzM0MzAwfQ.4zbX4COIu_zQnQey8Mg4Kqg5LpIODirMioVXfQBsW74"
-const invoices = await axios.get(`http://localhost:3002/api/invoice/print/${sh_running}`,{
-  headers: {
-      Authorization: `Bearer ${token}`
+
+const channel = new BroadcastChannel('invoice-channel-vat');
+
+const fetchInvoice = async () => {
+  try { 
+    const res = await axios.get(`http://localhost:3002/api/invoice/print/${sh_running}`,{
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+    })
+    if(res) {
+      return res
+    }
+  }catch(error) {
+    retryCount.value++
+    if (retryCount.value <= maxRetry) {
+      console.warn(`Retry #${retryCount.value}`)
+      setTimeout(fetchInvoice, retryDelay)
+    } else {
+      console.error('โหลดไม่สำเร็จหลัง retry ครบแล้ว')
+      // channel.postMessage({ type: 'error' })
+      localStorage.setItem('error', 'true')
+      window.close();  
+    }
+  }
+}
+const invoices = await fetchInvoice()
+onMounted( async () => {
+  console.log(invoices)
+  pages.value = await Math.ceil((invoices?.data?.shopping_order?.length || 0) / maxRows)
+  await nextTick()
+  if(invoices){
+    requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.print()
+      window.close()
+      channel.postMessage({ type: 'printed' })
+    })
+  })
   }
 })
-
-
-const pages = Math.ceil(invoices.data.shopping_order.length / maxRows)
-console.log('page', pages)
-onMounted(() => {
-  Barcode.value = true
-  window.print(); 
-  localStorage.removeItem("isPrinting")
-  window.close();
-})
-
 
 function formatNumber(value: number | string | undefined | null): string {
   if (!value && value !== 0) return '\u00A0' // ช่องว่าง

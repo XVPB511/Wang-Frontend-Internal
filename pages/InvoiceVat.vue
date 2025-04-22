@@ -34,6 +34,13 @@
       </div>
 
       <div class="flex justify-end">
+        <div
+          v-if="err"
+          class="bg-red-300 align-middle p-2 mr-2 rounded-md w-full flex"
+        >
+          <p class="text-black">Invoice service is down please refresh</p>
+          <!-- <button class="bg-">refresh</button> -->
+        </div>
         <input
           type="text"
           placeholder="🔍 สแกน หมายเหตุ เลข เพื่อสั่งพิมพ์บิลใหม่"
@@ -53,8 +60,6 @@
 </template>
 
 <script setup lang="ts">
-
-
 // definePageMeta({
 //   layout: 'check-login'
 // })
@@ -63,6 +68,23 @@ import { onMounted, onBeforeUnmount, ref, computed, watch } from "vue";
 import type { TableColumn } from "@nuxt/ui";
 import axios from "axios";
 import { socketvat } from "../components/socket";
+
+
+const alertToast = useToast()
+function showToastPrint () {
+    localStorage.removeItem('error')
+    alertToast.add({title: 'Something Wrong in Print Page', color: 'error'})
+    setTimeout(() => {
+      location.reload();
+    }, 5000)
+}
+function showToastList () {
+    localStorage.removeItem('error')
+    alertToast.add({title: 'Something Wrong in Web Socket', color: 'error'})
+    setTimeout(() => {
+      location.reload();
+    }, 5000)
+}
 
 const config = useRuntimeConfig();
 const router = useRouter();
@@ -157,17 +179,17 @@ const columns: TableColumn<Invoice>[] = [
   },
 ];
 
-socketvat.on("connect", () => {
-  console.log("✅ WebSocket Connected");
-});
+// socketvat.on("connect", () => {
+//   console.log("✅ WebSocket Connected");
+// });
 
-socketvat.on("disconnect", () => {
-  console.log("🔌 WebSocket Disconnected");
-});
+// socketvat.on("disconnect", () => {
+//   console.log("🔌 WebSocket Disconnected");
+// });
 
 socketvat.on("invoice:print", (data) => {
-  // console.log(data)
   const originalValueFromBackend = data as InvoiceFromAPI[];
+  console.log('originalValueFromBackend', originalValueFromBackend)
 
   invoices.value = originalValueFromBackend.map((item) => {
     return {
@@ -179,60 +201,135 @@ socketvat.on("invoice:print", (data) => {
 });
 
 const handleInvoicePrint = (data: InvoiceFromAPI[]) => {
-  invoices.value = data.map(item => ({ ...item, isPrinted: false }));
+  invoices.value = data.map((item) => ({ ...item, isPrinted: false }));
 };
 
+const connectionError = ref(false);
+const channel = new BroadcastChannel("invoice-channel-vat");
+let err: boolean = false;
+let canPrint: boolean = true;
+
+
 onMounted(() => {
+
+  let retryCount = 0;
+  const maxRetry = 3;
+  let retryTimeout: NodeJS.Timeout | null = null;
+
+  const tryReconnect = () => {
+    if (retryCount < maxRetry) {
+      retryCount++;
+      console.log(`🔁 Retry WebSocket Connection Attempt ${retryCount}`);
+      socketvat.connect();
+    } else {
+      console.error("❌ WebSocket Connection Failed after 3 retries. Refreshing...");
+      showToastList();
+      connectionError.value = true;
+      setTimeout(() => {
+        location.reload();
+      }, 5000);
+    }
+  }
+
+
+
   socketvat.on("connect", () => {
     console.log("✅ WebSocket Connected");
+    retryCount = 0;
+    if (retryTimeout) {
+      clearTimeout(retryTimeout);
+    }
   });
 
   socketvat.on("disconnect", () => {
     console.log("🔌 WebSocket Disconnected");
+    retryTimeout = setTimeout(() => {
+      tryReconnect();
+    }, 3000);
+  });
+
+  socketvat.on("connect_error", (err) => {
+    console.error("❌ WebSocket Connect Error", err.message);
+    if (retryTimeout) clearTimeout(retryTimeout);
+    tryReconnect();
   });
 
   socketvat.on("invoice:print", handleInvoicePrint);
 
-  let index = 0;
-  setInterval(() => {
-  if (index < invoices.value.length) {
-    const toPrint = invoices.value[index];
+//   channel.addEventListener("message", (event) => {
+//     if (event.data.type === "error") {
+//       err = true;
+//       if (err) {
+//         alert("Invoice Service is down");
+//         location.reload();
+//       }
+//     }
+//   });
 
-    if (!toPrint.isPrinted) {
-      toPrint.isPrinted = true;
-      const routeData = router.resolve({
-        name: 'FormatVat',
-        query: { sh_running: toPrint.sh_running }
-      });
+  channel.addEventListener("message", (event) => {
+    if (event.data.type === "printed") {
       socketvat.emit('invoice:printed',{sh_running: invoices.value[index].sh_running})
-      window.open(routeData.href, '_blank');
+      canPrint = true;
     }
+  });
 
-    index++;
-    if (index === invoices.value.length) {
-      setTimeout(() => {
-        location.reload();
-      }, 1000);
+  let index = 0;
+
+  const invoicePrint = () => setTimeout(() => {
+    const errprint = localStorage.getItem('error')
+    let isGoingtoReload = false
+    console.log(errprint)
+    if(errprint) {
+        showToastPrint()
+        return
     }
-  }
-}, 5000);
+    if (index <= invoices.value.length && !err && canPrint) {
+      const toPrint = invoices.value[index];
+      if (!toPrint.isPrinted) {
+        err = false;
+        toPrint.isPrinted = true;
+        const routeData = router.resolve({
+          name: "FormatVat",
+          query: { sh_running: toPrint.sh_running },
+        });
+        canPrint = false;
+        window.open(routeData.href, "_blank");
+        console.log('index : ', index)
+        index++;
+      }
+
+      if (index+1 > invoices.value.length) {
+        console.log('มันทำอันนี้เปล่าวะ')
+        // invoicePrint()
+        isGoingtoReload = true
+        index = 0;
+        setTimeout(() => {
+          invoicePrint()
+          // location.reload();
+        }, 2000);
+      } 
+    }
+    if(!isGoingtoReload) {
+      invoicePrint()
+    }
+  }, 5000);
+
+  setTimeout(() => {
+    invoicePrint()
+  }, 5000)
 });
 
-const socketStatus = computed(() => {
-  return socketvat.connected;
-});
+// const RefreshToken = async () => {
+//   const refreshT = sessionStorage.getItem("refreshtoken");
+//   const response = await axios.post(
+//     config.public.apiBase + "/api/auth/refresh",
+//     {
+//       refreshToken: refreshT,
+//     }
+//   );
+//   alert(JSON.stringify(response.data));
 
-const RefreshToken = async () => {
-  const refreshT = sessionStorage.getItem("refreshtoken");
-  const response = await axios.post(
-    config.public.apiBase + "/api/auth/refresh",
-    {
-      refreshToken: refreshT,
-    }
-  );
-  alert(JSON.stringify(response.data));
-
-  sessionStorage.setItem("token", response?.data?.access_token);
-  sessionStorage.setItem("refreshtoken", response?.data?.refresh_token);
+//   sessionStorage.setItem("token", response?.data?.access_token);
+//   sessionStorage.setItem("refreshtoken", response?.data?.refresh_token);
 };
 </script>
