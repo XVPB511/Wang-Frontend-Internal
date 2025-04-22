@@ -253,7 +253,7 @@ const config = useRuntimeConfig()
 const router = useRoute()
 const maxRows = 15 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
 const sh_running = router.query.sh_running as string
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTIxODU5OSwiZXhwIjoxNzQ1MjU0NTk5fQ.Oj0amNzFpbPxXC9Jr39-Vfr336tnjrXqsozXgovX52Q"
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTI5Mzk3NiwiZXhwIjoxNzQ1MzI5OTc2fQ.9i4NU7q0nUDTVqxby8-N9wXjd9Y5NE6XDk8Q271MQ-Y"
 const invoices = await axios.get(`http://localhost:3002/api/invoice/print/${sh_running}`,{
   headers: {
       Authorization: `Bearer ${token}`

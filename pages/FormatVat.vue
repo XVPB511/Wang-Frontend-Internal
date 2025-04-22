@@ -25,11 +25,10 @@
           <p class="flex justify-center">ใบส่งสินค้า / ใบกำกับภาษี</p>
           <p>DELIVERY ORDER / TAX INVOICE</p>
         </div>
-        <!-- <div class="pr-8 text-sm font-normal">
-          <VueBarcode v-if="getItem(0).sh_running" :value="String(getItem(0).sh_running)" format="CODE128" :height="40"
-            :width="1.2" :display-value="false" />
+        <div v-if="invoices.data?.sh_sumprice" class="pr-8 text-sm font-normal">
+            <v-barcode height="30" displayValue="false" width="1.5" :value="invoices.data?.sh_sumprice" />
           <p class="flex justify-center">Invoice No.</p>
-        </div> -->
+        </div>
       </div>
 
       <div class="parent">
@@ -236,11 +235,16 @@
             <p>063-525-2235</p>
           </div>
         </div>
-        <div class="Payment text-sm ">
-          <!-- <VueBarcode v-if="getItem(0).sh_sumprice" :value="String(getItem(0).sh_sumprice)" format="CODE128"
-            :height="40" :width="1.2" :display-value="false" /> -->
-
-          <p class="flex justify-center">Payment</p>
+        <div v-if="invoices.data?.sh_sumprice" class="Payment text-sm mt-4 flex flex-col items-center space-y-2 mr-20">
+          <v-barcode
+            :value="invoices.data?.sh_sumprice"
+            format="CODE128"
+            :height="30"
+            :width="1.5"
+            :display-value="false"
+            class="mb-1"
+          />
+          <p class="text-center">Payment</p>
         </div>
       </div>
     </div>
@@ -252,14 +256,20 @@ import { onMounted, onBeforeUnmount, ref, computed, watch, defineProps, nextTick
 import axios, { formToJSON } from 'axios'
 import QrcodeVue from "qrcode.vue";
 import { useRoute } from 'vue-router'
-import VueBarcode from 'vue3-barcode'
-import BarcodeDisplay1 from "~/components/BarcodeDisplay1.vue";
+import { VBarcode } from "vbarcode";
+
+let Barcode = ref(false)
+// export default {
+//   components: {
+//     BarcodeDisplay1,
+//   },
+// };
 
 const router = useRoute()
 const maxRows = 15 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
 const sh_running = router.query.sh_running as string 
 console.log(sh_running)
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTIxODU5OSwiZXhwIjoxNzQ1MjU0NTk5fQ.Oj0amNzFpbPxXC9Jr39-Vfr336tnjrXqsozXgovX52Q"
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTI5ODMwMCwiZXhwIjoxNzQ1MzM0MzAwfQ.4zbX4COIu_zQnQey8Mg4Kqg5LpIODirMioVXfQBsW74"
 const invoices = await axios.get(`http://localhost:3002/api/invoice/print/${sh_running}`,{
   headers: {
       Authorization: `Bearer ${token}`
@@ -270,6 +280,7 @@ const invoices = await axios.get(`http://localhost:3002/api/invoice/print/${sh_r
 const pages = Math.ceil(invoices.data.shopping_order.length / maxRows)
 console.log('page', pages)
 onMounted(() => {
+  Barcode.value = true
   window.print(); 
   localStorage.removeItem("isPrinting")
   window.close();

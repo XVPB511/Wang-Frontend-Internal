@@ -40,22 +40,6 @@
           class="border border-gray-300 w-96 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
         />
       </div>
-
-      <div class="flex justify-end space-x-2">
-        <button
-          @click="handlePreviousBtn"
-          class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md"
-        >
-          ⬅
-        </button>
-        <button
-          @click="handleNextBtn"
-          class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md"
-        >
-          ➡
-        </button>
-      </div>
-
       <div>
         <UTable
           :data="invoices"
@@ -69,6 +53,8 @@
 </template>
 
 <script setup lang="ts">
+
+
 // definePageMeta({
 //   layout: 'check-login'
 // })
@@ -81,39 +67,6 @@ import { socketvat } from "../components/socket";
 const config = useRuntimeConfig();
 const router = useRouter();
 
-const offset = ref(0);
-const limit = ref(10);
-console.log("offset.val", offset.value);
-
-function handlePreviousBtn() {
-  offset.value = offset.value - 10;
-  if (offset.value <= 0) {
-    offset.value = 0;
-  }
-  loadInvoices(offset.value, limit.value);
-  console.log("offset.val", offset.value);
-}
-
-function handleNextBtn() {
-  // offset.value = 0
-  // limit.value = 10
-
-  offset.value = offset.value + 10;
-  loadInvoices(offset.value, limit.value);
-
-  console.log("offset.val", offset.value);
-
-  // loadInvoices()
-}
-
-function loadInvoices(offset: number, limit: number) {
-  socketvat.emit("invoice:get", { offset, limit });
-
-  // output.value += `\n📤 Requesting invoices with offset: ${offset}, limit: ${limit}\n`
-}
-
-// GPT code start
-// Define the updated TypeScript interface for the invoice data
 interface InvoiceFromAPI {
   mem_code: string;
   mem_name: string;
@@ -134,7 +87,6 @@ interface Invoice extends InvoiceFromAPI {
 }
 const invoices = ref<Invoice[]>([]);
 
-// Columns definition with the updated interface
 const columns: TableColumn<Invoice>[] = [
   {
     id: "index",
@@ -226,38 +178,11 @@ socketvat.on("invoice:print", (data) => {
   return data;
 });
 
-function checkPrint() {
-  console.log("invoices.value.length ", invoices.value.length);
-}
+const handleInvoicePrint = (data: InvoiceFromAPI[]) => {
+  invoices.value = data.map(item => ({ ...item, isPrinted: false }));
+};
 
-// getter
-// watch(
-//   () => {
-//     // if isPrint = false && invoices.lenght > 0
-
-//     // return true
-//     return
-//   },
-//   (sum) => {
-//     console.log(`sum of x + y is: ${sum}`)
-//   }
-// )
-
-// watch(invoices, async (newinvoices, oldinvoices) => {
-// if(newinvoices.length > 0) {
-//     const toPrint = newinvoices[0]
-//     const routeData = router.resolve({ name: 'print-preview', query: { sh_running: toPrint.sh_running } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
-//     console.log("routeData ",routeData)
-//     console.log("process.server", import.meta.server)
-//     console.log("process.client", import.meta.client) // import.meta.client = true
-//     window.open(routeData.href, '_blank')
-// }
-// })
-
-// GPT code end
 onMounted(() => {
-  socketvat.emit("invoice:get", { offset, limit });
-
   socketvat.on("connect", () => {
     console.log("✅ WebSocket Connected");
   });
@@ -265,6 +190,8 @@ onMounted(() => {
   socketvat.on("disconnect", () => {
     console.log("🔌 WebSocket Disconnected");
   });
+
+  socketvat.on("invoice:print", handleInvoicePrint);
 
   let index = 0;
   setInterval(() => {
