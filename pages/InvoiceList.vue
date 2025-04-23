@@ -112,17 +112,17 @@ const columns: TableColumn<Invoice>[] = [
   {
     accessorKey: 'mem_code',
     header: 'รหัสสมาชิก',
-    cell: ({ row }) => `${row.getValue('mem_code')}`,
+    cell: ({ row }) => `${row.original.members?.mem_code ?? '-'}`,
   },
   {
     accessorKey: 'mem_name',
     header: 'นามร้าน',
-    cell: ({ row }) => `${row.getValue('mem_name')}`,
+    cell: ({ row }) => `${row.original.members?.mem_name ?? '-'}`,
   },
   {
     accessorKey: 'emp_code',
     header: 'รหัสพนักงาน',
-    cell: ({ row }) => `${row.getValue('emp_code')}`,
+    cell: ({ row }) => `${row.original.members?.emp_code ?? '-'}`,
   },
   {
     accessorKey: 'sh_listsale',

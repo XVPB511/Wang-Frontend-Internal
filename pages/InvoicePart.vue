@@ -67,7 +67,7 @@
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
-import { socketpart, socketprint } from "../components/socket";
+import { socketpart } from "../components/socket";
 
 const config = useRuntimeConfig()
 const router = useRouter()
@@ -140,20 +140,20 @@ const columns: TableColumn<Invoice>[] = [
         cell: ({ row }) => `${row.getValue('sh_running')}`,
     },
     {
-        accessorKey: 'mem_code',
-        header: 'รหัสสมาชิก',
-        cell: ({ row }) => `${row.getValue('mem_code')}`,
-    },
-    {
-        accessorKey: 'mem_name',
-        header: 'นามร้าน',
-        cell: ({ row }) => `${row.getValue('mem_name')}`,
-    },
-    {
-        accessorKey: 'emp_code',
-        header: 'รหัสพนักงาน',
-        cell: ({ row }) => `${row.getValue('emp_code')}`,
-    },
+    accessorKey: 'mem_code',
+    header: 'รหัสสมาชิก',
+    cell: ({ row }) => `${row.original.members?.mem_code ?? '-'}`,
+  },
+  {
+    accessorKey: 'mem_name',
+    header: 'นามร้าน',
+    cell: ({ row }) => `${row.original.members?.mem_name ?? '-'}`,
+  },
+  {
+    accessorKey: 'emp_code',
+    header: 'รหัสพนักงาน',
+    cell: ({ row }) => `${row.original.members?.emp_code ?? '-'}`,
+  },
     {
         accessorKey: 'sh_listsale',
         header: 'จำนวนที่ขาย',
@@ -215,42 +215,12 @@ socketpart.on('invoice:print', (data) => {
             isPrinted: false
         }
     });
-    socketpart.emit('invoice:printed', { sh_running: invoices.value[0].sh_running });
     return data;
 })
 
-function checkPrint() {
-    console.log("invoices.value.length ", invoices.value.length)
-
-
-}
-
-// getter
-// watch(
-//   () => {
-//     // if isPrint = false && invoices.lenght > 0
-
-//     // return true
-//     return 
-//   },
-//   (sum) => {
-//     console.log(`sum of x + y is: ${sum}`)
-//   }
-// )
-
-
-
-
-// watch(invoices, async (newinvoices, oldinvoices) => {
-// if(newinvoices.length > 0) {
-//     const toPrint = newinvoices[0]
-//     const routeData = router.resolve({ name: 'print-preview', query: { sh_running: toPrint.sh_running } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
-//     console.log("routeData ",routeData)
-//     console.log("process.server", import.meta.server)
-//     console.log("process.client", import.meta.client) // import.meta.client = true 
-//     window.open(routeData.href, '_blank')
+// function checkPrint() {
+//     console.log("invoices.value.length ", invoices.value.length)
 // }
-// })
 
 // GPT code end
 onMounted(() => {
@@ -273,11 +243,12 @@ onMounted(() => {
             const toPrint = invoices.value.find((invoice) => invoice.isPrinted === false)
             if (toPrint) {
                 toPrint.isPrinted = true
-                const routeData = router.resolve({ name: 'print-preview', query: { sh_running: toPrint.sh_running } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
+                const routeData = router.resolve({ name: 'FormatPart', query: { sh_running: toPrint.sh_running } })
                 console.log("routeData ", routeData)
                 console.log("process.server", import.meta.server)
-                console.log("process.client", import.meta.client) // import.meta.client = true 
+                console.log("process.client", import.meta.client)
                 window.open(routeData.href, '_blank')
+                socketpart.emit('invoice:printed', { sh_running: invoices.value[0].sh_running });
             }
         }
     }, 5000)
@@ -299,16 +270,16 @@ const RefreshToken = async () => {
     sessionStorage.setItem('refreshtoken', response?.data?.refresh_token)
 }
 
-const handlePrint = async (id: string, rowData: any) => {
+// const handlePrint = async (id: string, rowData: any) => {
 
-    try {
-        const routeData = router.resolve({ name: 'print-preview', query: { sh_running: id } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
-        console.log(routeData)
-        // window.open(routeData.href, '_blank')
+//     try {
+//         const routeData = router.resolve({ name: 'print-preview', query: { sh_running: id } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
+//         console.log(routeData)
+//         // window.open(routeData.href, '_blank')
 
-    } catch (error) {
-        console.error('เกิดข้อผิดพลาดขณะพิมพ์:', error);
-    }
+//     } catch (error) {
+//         console.error('เกิดข้อผิดพลาดขณะพิมพ์:', error);
+//     }
 
-}
+// }
 </script>

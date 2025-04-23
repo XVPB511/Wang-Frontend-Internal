@@ -1,17 +1,15 @@
 <template>
-  
   <div class="min-h-screen bg-white">
-    <div class="quotation-container ">
+    <div v-for="page in pages" class="quotation-container">
       <div class="">
         <h2 class="text-lg font-bold">บริษัท วังเภสัชฟาร์มาซูติคอล จำกัด (สำนักงานใหญ่)</h2>
         <p class="text-sm">เลขที่ 23 ซ.พัฒโน ต.หาดใหญ่ อ.หาดใหญ่ จ.สงขลา 90110</p>
         <p class="text-sm">โทร. 074-366681-4 แฟกซ์ 074-238629</p>
         <p class="text-sm">เลขประจำตัวผู้เสียภาษี 0905538001557</p>
       </div>
-
       <div class="meta flex justify-between ">
         <div class="pl-8 text-sm font-normal">
-          <QrcodeVue :value="`${getItem(0)?.sh_running || ''}/${getItem(0)?.sh_sumprice || ''}`" :size="75"
+          <QrcodeVue :value="`${invoices.data?.sh_running || ''}/${invoices.data?.sh_sumprice || ''}`" :size="50"
             :level="'H'" />
           <p class="flex justify-center">Checking No.</p>
         </div>
@@ -19,29 +17,32 @@
           <p>ใบเสนอราคา</p>
           <p>Quotation</p>
         </div>
-        <div class="pr-8 text-sm font-normal">
-          <VueBarcode v-if="getItem(0).sh_running" :value="String(getItem(0).sh_running)" format="CODE128" :height="40"
-            :width="1.2" :display-value="false" />
+        <!-- <div class="pr-8 text-sm font-normal">
+          <BarcodeDisplay1 :value="invoices.data.sh_running" />
           <p class="flex justify-center">Invoice No.</p>
-        </div>
+        </div>  -->
+        <!-- <div class="pr-8 text-sm font-normal">
+          <BarcodeDisplay2 :value="invoices.data.sh_sumprice" />
+          <p class="flex justify-center">Payment No.</p>
+        </div>  -->
       </div>
 
       <div class="parent">
         <div class="invoice-info">
           <div class="flex justify-between">
-            <p>รหัสลูกค้า: {{ getItem(0)?.name_code }}</p>
+            <p>รหัสลูกค้า: {{ invoices.data?.name_code }}</p>
             <p>เลขประจำตัวผู้เสียภาษี: </p>
             <div>
               <input type="checkbox">สาขา</input>
             </div>
           </div>
           <div class="flex justify-between">
-            <p>ชื่อร้าน: {{ getItem(0)?.mem_name }}</p>
-            <p>ผู้ดูแล: {{ getItem(0)?.shop_keeper }}</p>
+            <p>ชื่อร้าน: {{ invoices.data?.mem_name }}</p>
+            <p>ผู้ดูแล: {{ invoices.data?.shop_keeper }}</p>
           </div>
-          <p>ที่อยู่:  {{ getItem(0)?.mem_address }}, {{ getItem(0)?.mem_village }}, {{ getItem(0)?.mem_alley }}, {{
-            getItem(0)?.mem_road }}, {{ getItem(0)?.subdistrict_id }}, {{ getItem(0)?.district_id }}, {{
-              getItem(0)?.province_id }}</p>
+          <p>ที่อยู่: {{ invoices.data?.mem_address }}, {{ invoices.data?.mem_village }}, {{ invoices.data?.mem_alley }}, {{
+            invoices.data?.mem_road }}, {{ invoices.data?.subdistrict_id }}, {{ invoices.data?.district_id }}, {{
+              invoices.data?.province_id }}</p>
           <div>&nbsp;</div>
           <div class="flex justify-between">
             <p>หมายเหตุ | |</p>
@@ -50,7 +51,7 @@
         </div>
         <div class="invoice-info2">
           <div class="flex justify-stretch">
-            <p>วันที่: {{ new Date(getItem(0)?.sh_datetime).toLocaleDateString("th-TH", {
+            <p>วันที่: {{ new Date(invoices.data?.sh_datetime).toLocaleDateString("th-TH", {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
@@ -58,11 +59,11 @@
 
           </div>
           <div class="flex justify-stretch">
-            <p>เลขที่ใบกำกับ: {{ getItem(0)?.sh_running }}</p>
+            <p>เลขที่ใบกำกับ: {{ invoices.data?.sh_running }}</p>
 
           </div>
           <div class="flex justify-stretch">
-            <p>พนักงานขาย: {{ getItem(0)?.emp_code }}</p>
+            <p>พนักงานขาย: {{ invoices.data?.emp_code }}</p>
 
           </div>
           <div class="flex justify-stretch">
@@ -70,7 +71,7 @@
 
           </div>
           <div class="flex justify-stretch">
-            <p>ครบกำหนด: {{ new Date(getItem(0)?.sh_datetime).toLocaleDateString("th-TH", {
+            <p>ครบกำหนด: {{ new Date(invoices.data?.sh_datetime).toLocaleDateString("th-TH", {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
@@ -89,7 +90,7 @@
       <table>
         <thead>
           <tr class="text-xs ">
-          <th>ที่</th>
+            <th>ที่</th>
             <th>รหัสสินค้า</th>
             <th>รายละเอียดสินค้า</th>
             <th>จำนวน</th>
@@ -102,8 +103,8 @@
         <tbody>
           <tr v-for="num in maxRows" :key="num">
             <td>
-              <template v-if="getItem(0)?.shopping_order[num - 1]">
-                {{ num }}
+              <template v-if="invoices.data?.shopping_order[(page - 1) * maxRows + (num - 1)]">
+                {{ ((page-1) * maxRows) + num }}
               </template>
               <template v-else>
                 &nbsp;
@@ -111,50 +112,52 @@
             </td>
 
             <!-- รหัสสินค้า -->
-            <td class="w-32">{{ getItem(0).shopping_order[num - 1]?.product_code || '\u00A0' }}</td>
+            <td class="w-32">{{ invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.product_code || '\u00A0' }}</td>
 
             <!-- ชื่อสินค้า + Lot/Exp -->
             <td class="w-64">
               <div class="product-name">
-                {{ getItem(0).shopping_order[num - 1]?.product_name || '\u00A0' }}
+                {{ invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.product_name || '\u00A0' }}
               </div>
-              <!-- <div >
-                  <template v-if="getItem(num - 1)">
-                    Lot: {{ getItem(num - 1).lotNumber }} &nbsp; Exp: {{ getItem(num - 1).expiryDate }}
+              <div class="text-[11px]">
+                  <template v-if="invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.detail[0].product_lot">
+                    Lot: {{ invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.detail[0].product_lot }} &nbsp; Exp: {{ invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.detail[0].product_exp }}
                   </template>
                   <template v-else>
                     &nbsp;
                   </template>
-                </div> -->
+                </div>
             </td>
 
-            <td class="text-right">{{ getItem(0).shopping_order[num - 1]?.so_amount || '\u00A0' }}</td>
-            <td>{{ getItem(0).shopping_order[num - 1]?.so_unit || '\u00A0' }}</td>
-            <td class="text-right">{{ formatNumber(getItem(0).shopping_order[num - 1]?.so_priceU) }}</td>
-            <td class="text-right">{{ formatNumber(getItem(0).shopping_order[num - 1]?.so_discount) }}</td>
-            <td class="text-right">{{ formatNumber(getItem(0).shopping_order[num - 1]?.so_sumprice) }}</td>
+            <td class="text-right">{{ invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.so_amount || '\u00A0' }}</td>
+            <td>{{ invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.so_unit || '\u00A0' }}</td>
+            <td class="text-right">{{ formatNumber(invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.so_priceU) }}</td>
+            <td class="text-right">{{ formatNumber(invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.so_discount) }}</td>
+            <td class="text-right">{{ formatNumber(invoices.data.shopping_order[(page - 1) * maxRows + (num - 1)]?.so_sumprice) }}</td>
           </tr>
         </tbody>
       </table>
       <div class="footer">
-        <div class="TotalText border text-sm font-bold ">ยอดเงินสุทธิ: {{ bahtText(Number(getItem(0)?.sh_sumprice)) }}</div>
+        <div class="TotalText border text-sm font-bold pl-2">
+          {{ page==pages ? `ยอดเงินสุทธิ: ${bahtText(Number(invoices.data?.sh_sumprice))}`: `ยอดเงินสุทธิ: `}}
+        </div>
         <div class="TotalNumTax border p-1 text-sm ">
           <div class="flex justify-between">
             <p>รวมเป็น: </p>
-            <p class="font-bold">{{ (Number(getItem(0)?.sh_sumprice) - Number(getItem(0)?.sh_sumprice) *
+            <p class="font-bold" v-if="page==pages">{{ (Number(invoices.data?.sh_sumprice) - Number(invoices.data?.sh_sumprice) *
               0.07).toFixed(2) }}</p>
           </div>
           <div class="flex justify-between">
             <p>ภาษีมูลค่าเพิ่ม 7%:</p>
-            <p class="text-sm font-bold">{{ (Number(getItem(0)?.sh_sumprice) * 0.07).toFixed(2) }}</p>
+            <p class="text-sm font-bold" v-if="page==pages">{{ (Number(invoices.data?.sh_sumprice) * 0.07).toFixed(2) }}</p>
           </div>
         </div>
         <div class="TotalNum flex justify-between border p-1 text-sm ">
           <p>ยอดเงินสุทธิ:</p>
-          <p class="text-sm font-bold">{{ (Number(getItem(0)?.sh_sumprice)).toFixed(2) }}</p>
+          <p class="text-sm font-bold" v-if="page==pages">{{ (Number(invoices.data?.sh_sumprice)).toFixed(2) }}</p>
         </div>
         <div class="CountPage text-sm ">
-          <p class="flex justify-center">สำหรับลูกค้า [{{  }}/{{ pages }}]</p> <!--จำนวนหน้า -->
+          <p class="flex justify-center">สำหรับลูกค้า [{{page }}/{{ pages }}]</p> <!--จำนวนหน้า -->
         </div>
         <div class="AccDep text-sm border p-1 ">
           <div class="flex justify-center">
@@ -166,7 +169,7 @@
             <p>)</p>
           </div>
           <div class="flex justify-center text-xs">
-            <p>วันที่ {{ new Date(getItem(0)?.sh_datetime).toLocaleDateString("th-TH", {
+            <p>วันที่ {{ new Date(invoices.data?.sh_datetime).toLocaleDateString("th-TH", {
               year: '2-digit',
               month: '2-digit',
               day: '2-digit'
@@ -226,160 +229,48 @@
           </div>
         </div>
         <div class="Payment text-sm ">
-          <VueBarcode v-if="getItem(0).sh_sumprice" :value="String(getItem(0).sh_sumprice)" format="CODE128"
-            :height="40" :width="1.2" :display-value="false" />
+          <!-- <VueBarcode v-if="getItem(0).sh_sumprice" :value="String(getItem(0).sh_sumprice)" format="CODE128"
+            :height="40" :width="1.2" :display-value="false" :key="'barcode-' + getItem(0).sh_sumprice"/> -->
 
           <p class="flex justify-center">Payment</p>
         </div>
       </div>
     </div>
   </div>
-  <div class="page-break" />
+  <!-- <div class="page-break" /> -->
 </template>
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, computed, watch, defineProps } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios, { formToJSON } from 'axios'
-import { socketprint } from "../components/socket";
 import QrcodeVue from "qrcode.vue";
-import VueBarcode from 'vue3-barcode'
+import BarcodeDisplay1 from "~/components/BarcodeDisplay1.vue";
+import BarcodeDisplay2 from '~/components/BarcodeDisplay2.vue';
+import { useRoute } from 'vue-router';
 
 const config = useRuntimeConfig()
-const router = useRouter()
+const router = useRoute()
 const maxRows = 15 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
+const sh_running = router.query.sh_running as string
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTIxODU5OSwiZXhwIjoxNzQ1MjU0NTk5fQ.Oj0amNzFpbPxXC9Jr39-Vfr336tnjrXqsozXgovX52Q"
+const invoices = await axios.get(`http://localhost:3002/api/invoice/print/${sh_running}`,{
+  headers: {
+      Authorization: `Bearer ${token}`
+  }
+})
+console.log(sh_running)
+console.log(invoices.data)
 
-// รับ props จากแม่
-const props = defineProps<{
-  productCount: number
-}>()
-// สร้าง emit เพื่อส่งข้อมูลกลับ
-const emit = defineEmits(['pages-calculated'])
-
-// คำนวณจำนวนหน้า (เช่น หน้า 10 รายการ)
-const pages = computed(() => Math.ceil(props.productCount / maxRows))
-
-// ทุกครั้งที่จำนวนเปลี่ยน → emit ไปหาแม่
-watch(pages, (newPages) => {
-  emit('pages-calculated', newPages)
-}, { immediate: true }) // ให้ส่งทันทีตอน mount
+const pages = Math.ceil(invoices.data.shopping_order.length / maxRows)
+console.log('page', pages)
 
 onMounted(() => {
-  socketprint.on('connect', () => {
-    console.log('✅ WebSocket Connected')
-  })
+  window.print();
+    localStorage.removeItem("isPrinting")
 
-  socketprint.on('disconnect', () => {
-    console.log('🔌 WebSocket Disconnected')
-  })
+    window.close();
 })
-
-// ตัวอย่างข้อมูล (อาจมาจาก API)
-// const invoices = [
-//   {
-//     mem_address: "123/1",
-//     mem_village: "Pruksa Village",
-//     mem_alley: "Soi 5",
-//     mem_road: "Suksawat Road",
-//     subdistrict_id: "90110",
-//     district_id: "Hat Yai",
-//     province_id: "Song Khla",
-//     shop_keeper: "Somchai",
-//     mem_name: "Somchai Pharmacy",
-//     name_code: "MB0004",
-//     sh_datetime: "2025-04-17T10:00:00.000Z",
-//     sh_running: "SH000001",
-//     emp_code: "EMP001",
-//     sh_sumprice: "450.00",
-//     shopping_order: [
-//       {
-//         product_code: "PROD001",
-//         product_name: " 500mg",
-//         so_amount: 1,
-//         so_unit: "box",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
-//       {
-//         product_code: "PROD002",
-//         product_name: "fesf",
-//         so_amount: 1,
-//         so_unit: "bottle",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
-//       {
-//         product_code: "PROD003",
-//         product_name: "-  1000mg",
-//         so_amount: 1,
-//         so_unit: "box",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
-//       {
-//         product_code: "PROD001",
-//         product_name: " 500mg",
-//         so_amount: 1,
-//         so_unit: "box",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
-//       {
-//         product_code: "PROD002",
-//         product_name: "fesf",
-//         so_amount: 1,
-//         so_unit: "bottle",
-//         so_priceU: "150.00",
-//         so_discount: "0.00",
-//         so_sumprice: "150.00"
-//       },
-
-//     ]
-//   }
-// ]
-
-
-  interface Invoice {
-    mem_address: string;
-    mem_village: string;
-    mem_alley: string;
-    mem_road: string;
-    subdistrict_id: string;
-    district_id: string;
-    province_id: string;
-    shop_keeper: string;
-    mem_name: string;
-    name_code: string;
-    sh_datetime: string;
-    sh_running: string;
-    emp_code: string;
-    sh_sumprice: number;
-    shopping_order: ShoppingOrder[];
-  }
-  interface ShoppingOrder {
-  product_code: string;
-    product_name: string;
-    so_amount: number;
-    so_unit: string;
-    so_priceU: number;
-    so_discount: number;
-    so_sumprice: number;
-}
-const invoices = ref<Invoice[]>([])
-// ฟังก์ชันช่วยดึง item ตาม index
-function getItem(index: number) {
-  return invoices.value[index] || null
-}
-
-// ฟังก์ชันช่วยดึง item ตาม index
-// function getItem(index: number) {
-//   return invoices[index] || null
-// }
-
 
 function formatNumber(value: number | string | undefined | null): string {
   if (!value && value !== 0) return '\u00A0' // ช่องว่าง
@@ -388,6 +279,7 @@ function formatNumber(value: number | string | undefined | null): string {
     maximumFractionDigits: 2,
   })
 }
+
 
 function bahtText(amount: number): string {
   const thaiNum = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
@@ -450,6 +342,7 @@ function bahtText(amount: number): string {
   background: white;
   color: #000
 }
+
 @media print {
   .page-break {
     page-break-before: always;
