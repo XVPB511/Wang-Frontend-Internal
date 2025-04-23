@@ -259,7 +259,7 @@ import { VBarcode } from "vbarcode";
 
 const router = useRoute()
 const maxRows = 15
-const pages = ref(0) // Initialize pages as a reactive property
+const pages = ref(0)
 const sh_running = router.query.sh_running as string
 const maxRetry = 3
 const retryDelay = 1000 
@@ -267,7 +267,7 @@ const retryCount = ref(0)
 
 
 console.log(sh_running)
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTI5ODMwMCwiZXhwIjoxNzQ1MzM0MzAwfQ.4zbX4COIu_zQnQey8Mg4Kqg5LpIODirMioVXfQBsW74"
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTM5MzQxMSwiZXhwIjoxNzQ1NDI5NDExfQ.B3hITDOlCVRq9xjQpoUI8UvK7r7Hbwi6P9inqxOJiHA"
 
 const channel = new BroadcastChannel('invoice-channel-vat');
 

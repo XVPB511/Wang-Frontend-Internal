@@ -64,11 +64,13 @@
 //   layout: 'check-login'
 // })
 
-import { onMounted, onBeforeUnmount, ref, computed, watch } from "vue";
+import { onMounted, ref } from "vue";
 import type { TableColumn } from "@nuxt/ui";
 import axios from "axios";
 import { socketvat } from "../components/socket";
 
+const config = useRuntimeConfig();
+const router = useRouter();
 
 const alertToast = useToast()
 function showToastPrint () {
@@ -86,8 +88,6 @@ function showToastList () {
     }, 5000)
 }
 
-const config = useRuntimeConfig();
-const router = useRouter();
 
 interface InvoiceFromAPI {
   mem_code: string;
@@ -173,42 +173,21 @@ const columns: TableColumn<Invoice>[] = [
     cell: ({ row }) => `${row.getValue("qc_print")}`,
   },
   {
-    accessorKey: "qc_timePrice",
+    accessorKey: "qc_timePrint",
     header: "วันที่พิมพ์ QC",
-    cell: ({ row }) => `${row.getValue("qc_timePrice")}`,
+    cell: ({ row }) => `${row.getValue("qc_timePrint")}`,
   },
 ];
 
-// socketvat.on("connect", () => {
-//   console.log("✅ WebSocket Connected");
-// });
-
-// socketvat.on("disconnect", () => {
-//   console.log("🔌 WebSocket Disconnected");
-// });
-
-socketvat.on("invoice:print", (data) => {
-  const originalValueFromBackend = data as InvoiceFromAPI[];
-  console.log('originalValueFromBackend', originalValueFromBackend)
-
-  invoices.value = originalValueFromBackend.map((item) => {
-    return {
-      ...item,
-      isPrinted: false,
-    };
-  });
-  return data;
-});
 
 const handleInvoicePrint = (data: InvoiceFromAPI[]) => {
   invoices.value = data.map((item) => ({ ...item, isPrinted: false }));
 };
 
-const connectionError = ref(false);
 const channel = new BroadcastChannel("invoice-channel-vat");
 let err: boolean = false;
 let canPrint: boolean = true;
-
+const connectionError = ref(false);
 
 onMounted(() => {
 
@@ -255,16 +234,6 @@ onMounted(() => {
   });
 
   socketvat.on("invoice:print", handleInvoicePrint);
-
-//   channel.addEventListener("message", (event) => {
-//     if (event.data.type === "error") {
-//       err = true;
-//       if (err) {
-//         alert("Invoice Service is down");
-//         location.reload();
-//       }
-//     }
-//   });
 
   channel.addEventListener("message", (event) => {
     if (event.data.type === "printed") {
@@ -319,17 +288,17 @@ onMounted(() => {
   }, 5000)
 });
 
-// const RefreshToken = async () => {
-//   const refreshT = sessionStorage.getItem("refreshtoken");
-//   const response = await axios.post(
-//     config.public.apiBase + "/api/auth/refresh",
-//     {
-//       refreshToken: refreshT,
-//     }
-//   );
-//   alert(JSON.stringify(response.data));
+const RefreshToken = async () => {
+  const refreshT = sessionStorage.getItem("refreshtoken");
+  const response = await axios.post(
+    config.public.apiBase + "/api/auth/refresh",
+    {
+      refreshToken: refreshT,
+    }
+  );
+  alert(JSON.stringify(response.data));
 
-//   sessionStorage.setItem("token", response?.data?.access_token);
-//   sessionStorage.setItem("refreshtoken", response?.data?.refresh_token);
+  sessionStorage.setItem("token", response?.data?.access_token);
+  sessionStorage.setItem("refreshtoken", response?.data?.refresh_token);
 };
 </script>

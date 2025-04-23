@@ -160,9 +160,9 @@ const columns: TableColumn<Invoice>[] = [
     cell: ({ row }) => `${row.getValue('qc_print')}`,
   },
   {
-    accessorKey: 'qc_timePrice',
+    accessorKey: 'qc_timePrint',
     header: 'วันที่พิมพ์ QC',
-    cell: ({ row }) => `${row.getValue('qc_timePrice')}`,
+    cell: ({ row }) => `${row.getValue('qc_timePrint')}`,
   },
 
 ];

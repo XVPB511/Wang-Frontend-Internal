@@ -241,35 +241,63 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, computed, watch, defineProps } from 'vue'
-import type { TableColumn } from '@nuxt/ui'
-import axios, { formToJSON } from 'axios'
+import { onMounted } from 'vue'
+import axios from 'axios'
 import QrcodeVue from "qrcode.vue";
-import BarcodeDisplay1 from "~/components/BarcodeDisplay1.vue";
-import BarcodeDisplay2 from '~/components/BarcodeDisplay2.vue';
 import { useRoute } from 'vue-router';
+import { VBarcode } from "vbarcode";
 
-const config = useRuntimeConfig()
 const router = useRoute()
-const maxRows = 15 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
+const maxRows = 15
+const pages = ref(0)
 const sh_running = router.query.sh_running as string
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTI5Mzk3NiwiZXhwIjoxNzQ1MzI5OTc2fQ.9i4NU7q0nUDTVqxby8-N9wXjd9Y5NE6XDk8Q271MQ-Y"
-const invoices = await axios.get(`http://localhost:3002/api/invoice/print/${sh_running}`,{
-  headers: {
-      Authorization: `Bearer ${token}`
-  }
-})
+const maxRetry = 3
+const retryDelay = 1000 
+const retryCount = ref(0)
+
+
 console.log(sh_running)
-console.log(invoices.data)
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTMzOTc4NiwiZXhwIjoxNzQ1Mzc1Nzg2fQ.tmREosJG2VQEElOydm-wTWPXpFOQvbAf1AJ7q6dHuq4"
+const channel = new BroadcastChannel('invoice-channel-part');
 
-const pages = Math.ceil(invoices.data.shopping_order.length / maxRows)
-console.log('page', pages)
+const fetchInvoice = async () => {
+  try { 
+    const res = await axios.get(`http://localhost:3002/api/invoice/print/${sh_running}`,{
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+    })
+    if(res) {
+      return res
+    }
+  }catch(error) {
+    retryCount.value++
+    if (retryCount.value <= maxRetry) {
+      console.warn(`Retry #${retryCount.value}`)
+      setTimeout(fetchInvoice, retryDelay)
+    } else {
+      console.error('โหลดไม่สำเร็จหลัง retry ครบแล้ว')
+      // channel.postMessage({ type: 'error' })
+      localStorage.setItem('error', 'true')
+      window.close();  
+    }
+  }
+}
 
-onMounted(() => {
-  window.print();
-    localStorage.removeItem("isPrinting")
-
-    window.close();
+const invoices = await fetchInvoice()
+onMounted( async () => {
+  console.log(invoices)
+  pages.value = await Math.ceil((invoices?.data?.shopping_order?.length || 0) / maxRows)
+  await nextTick()
+  if(invoices){
+    requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.print()
+      window.close()
+      channel.postMessage({ type: 'printed' })
+    })
+  })
+  }
 })
 
 function formatNumber(value: number | string | undefined | null): string {
@@ -279,7 +307,6 @@ function formatNumber(value: number | string | undefined | null): string {
     maximumFractionDigits: 2,
   })
 }
-
 
 function bahtText(amount: number): string {
   const thaiNum = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
