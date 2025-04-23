@@ -34,28 +34,19 @@
       </div>
 
       <div class="flex justify-end">
+        <div
+          v-if="err"
+          class="bg-red-300 align-middle p-2 mr-2 rounded-md w-full flex"
+        >
+          <p class="text-black">Invoice service is down please refresh</p>
+          <!-- <button class="bg-">refresh</button> -->
+        </div>
         <input
           type="text"
           placeholder="🔍 สแกน หมายเหตุ เลข เพื่อสั่งพิมพ์บิลใหม่"
           class="border border-gray-300 w-96 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
         />
       </div>
-
-      <div class="flex justify-end space-x-2">
-        <button
-          @click="handlePreviousBtn"
-          class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md"
-        >
-          ⬅
-        </button>
-        <button
-          @click="handleNextBtn"
-          class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md"
-        >
-          ➡
-        </button>
-      </div>
-
       <div>
         <UTable
           :data="invoices"
@@ -73,7 +64,7 @@
 //   layout: 'check-login'
 // })
 
-import { onMounted, onBeforeUnmount, ref, computed, watch } from "vue";
+import { onMounted, ref } from "vue";
 import type { TableColumn } from "@nuxt/ui";
 import axios from "axios";
 import { socketvat } from "../components/socket";
@@ -81,39 +72,23 @@ import { socketvat } from "../components/socket";
 const config = useRuntimeConfig();
 const router = useRouter();
 
-const offset = ref(0);
-const limit = ref(10);
-console.log("offset.val", offset.value);
-
-function handlePreviousBtn() {
-  offset.value = offset.value - 10;
-  if (offset.value <= 0) {
-    offset.value = 0;
-  }
-  loadInvoices(offset.value, limit.value);
-  console.log("offset.val", offset.value);
+const alertToast = useToast()
+function showToastPrint () {
+    localStorage.removeItem('error')
+    alertToast.add({title: 'Something Wrong in Print Page', color: 'error'})
+    setTimeout(() => {
+      location.reload();
+    }, 5000)
+}
+function showToastList () {
+    localStorage.removeItem('error')
+    alertToast.add({title: 'Something Wrong in Web Socket', color: 'error'})
+    setTimeout(() => {
+      location.reload();
+    }, 5000)
 }
 
-function handleNextBtn() {
-  // offset.value = 0
-  // limit.value = 10
 
-  offset.value = offset.value + 10;
-  loadInvoices(offset.value, limit.value);
-
-  console.log("offset.val", offset.value);
-
-  // loadInvoices()
-}
-
-function loadInvoices(offset: number, limit: number) {
-  socketvat.emit("invoice:get", { offset, limit });
-
-  // output.value += `\n📤 Requesting invoices with offset: ${offset}, limit: ${limit}\n`
-}
-
-// GPT code start
-// Define the updated TypeScript interface for the invoice data
 interface InvoiceFromAPI {
   mem_code: string;
   mem_name: string;
@@ -134,7 +109,6 @@ interface Invoice extends InvoiceFromAPI {
 }
 const invoices = ref<Invoice[]>([]);
 
-// Columns definition with the updated interface
 const columns: TableColumn<Invoice>[] = [
   {
     id: "index",
@@ -199,100 +173,119 @@ const columns: TableColumn<Invoice>[] = [
     cell: ({ row }) => `${row.getValue("qc_print")}`,
   },
   {
-    accessorKey: "qc_timePrice",
+    accessorKey: "qc_timePrint",
     header: "วันที่พิมพ์ QC",
-    cell: ({ row }) => `${row.getValue("qc_timePrice")}`,
+    cell: ({ row }) => `${row.getValue("qc_timePrint")}`,
   },
 ];
 
-socketvat.on("connect", () => {
-  console.log("✅ WebSocket Connected");
-});
 
-socketvat.on("disconnect", () => {
-  console.log("🔌 WebSocket Disconnected");
-});
+const handleInvoicePrint = (data: InvoiceFromAPI[]) => {
+  invoices.value = data.map((item) => ({ ...item, isPrinted: false }));
+};
 
-socketvat.on("invoice:print", (data) => {
-  // console.log(data)
-  const originalValueFromBackend = data as InvoiceFromAPI[];
+const channel = new BroadcastChannel("invoice-channel-vat");
+let err: boolean = false;
+let canPrint: boolean = true;
+const connectionError = ref(false);
 
-  invoices.value = originalValueFromBackend.map((item) => {
-    return {
-      ...item,
-      isPrinted: false,
-    };
-  });
-  return data;
-});
-
-function checkPrint() {
-  console.log("invoices.value.length ", invoices.value.length);
-}
-
-// getter
-// watch(
-//   () => {
-//     // if isPrint = false && invoices.lenght > 0
-
-//     // return true
-//     return
-//   },
-//   (sum) => {
-//     console.log(`sum of x + y is: ${sum}`)
-//   }
-// )
-
-// watch(invoices, async (newinvoices, oldinvoices) => {
-// if(newinvoices.length > 0) {
-//     const toPrint = newinvoices[0]
-//     const routeData = router.resolve({ name: 'print-preview', query: { sh_running: toPrint.sh_running } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
-//     console.log("routeData ",routeData)
-//     console.log("process.server", import.meta.server)
-//     console.log("process.client", import.meta.client) // import.meta.client = true
-//     window.open(routeData.href, '_blank')
-// }
-// })
-
-// GPT code end
 onMounted(() => {
-  socketvat.emit("invoice:get", { offset, limit });
+
+  let retryCount = 0;
+  const maxRetry = 3;
+  let retryTimeout: NodeJS.Timeout | null = null;
+
+  const tryReconnect = () => {
+    if (retryCount < maxRetry) {
+      retryCount++;
+      console.log(`🔁 Retry WebSocket Connection Attempt ${retryCount}`);
+      socketvat.connect();
+    } else {
+      console.error("❌ WebSocket Connection Failed after 3 retries. Refreshing...");
+      showToastList();
+      connectionError.value = true;
+      setTimeout(() => {
+        location.reload();
+      }, 5000);
+    }
+  }
+
+
 
   socketvat.on("connect", () => {
     console.log("✅ WebSocket Connected");
+    retryCount = 0;
+    if (retryTimeout) {
+      clearTimeout(retryTimeout);
+    }
   });
 
   socketvat.on("disconnect", () => {
     console.log("🔌 WebSocket Disconnected");
+    retryTimeout = setTimeout(() => {
+      tryReconnect();
+    }, 3000);
+  });
+
+  socketvat.on("connect_error", (err) => {
+    console.error("❌ WebSocket Connect Error", err.message);
+    if (retryTimeout) clearTimeout(retryTimeout);
+    tryReconnect();
+  });
+
+  socketvat.on("invoice:print", handleInvoicePrint);
+
+  channel.addEventListener("message", (event) => {
+    if (event.data.type === "printed") {
+      socketvat.emit('invoice:printed',{sh_running: invoices.value[index].sh_running})
+      canPrint = true;
+    }
   });
 
   let index = 0;
-  setInterval(() => {
-  if (index < invoices.value.length) {
-    const toPrint = invoices.value[index];
 
-    if (!toPrint.isPrinted) {
-      toPrint.isPrinted = true;
-      const routeData = router.resolve({
-        name: 'FormatVat',
-        query: { sh_running: toPrint.sh_running }
-      });
-      socketvat.emit('invoice:printed',{sh_running: invoices.value[index].sh_running})
-      window.open(routeData.href, '_blank');
+  const invoicePrint = () => setTimeout(() => {
+    const errprint = localStorage.getItem('error')
+    let isGoingtoReload = false
+    console.log(errprint)
+    if(errprint) {
+        showToastPrint()
+        return
     }
+    if (index <= invoices.value.length && !err && canPrint) {
+      const toPrint = invoices.value[index];
+      if (!toPrint.isPrinted) {
+        err = false;
+        toPrint.isPrinted = true;
+        const routeData = router.resolve({
+          name: "FormatVat",
+          query: { sh_running: toPrint.sh_running },
+        });
+        canPrint = false;
+        window.open(routeData.href, "_blank");
+        console.log('index : ', index)
+        index++;
+      }
 
-    index++;
-    if (index === invoices.value.length) {
-      setTimeout(() => {
-        location.reload();
-      }, 1000);
+      if (index+1 > invoices.value.length) {
+        console.log('มันทำอันนี้เปล่าวะ')
+        // invoicePrint()
+        isGoingtoReload = true
+        index = 0;
+        setTimeout(() => {
+          invoicePrint()
+          // location.reload();
+        }, 2000);
+      } 
     }
-  }
-}, 5000);
-});
+    if(!isGoingtoReload) {
+      invoicePrint()
+    }
+  }, 5000);
 
-const socketStatus = computed(() => {
-  return socketvat.connected;
+  setTimeout(() => {
+    invoicePrint()
+  }, 5000)
 });
 
 const RefreshToken = async () => {

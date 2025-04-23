@@ -1,6 +1,5 @@
 <template>
-
-  <div class="min-h-screen bg-white">
+  <div v-if="invoices" class="min-h-screen bg-white">
     <div v-for="page in pages" class="quotation-container">
       <div class="flex justify-between">
         <div class="">
@@ -25,11 +24,10 @@
           <p class="flex justify-center">ใบส่งสินค้า / ใบกำกับภาษี</p>
           <p>DELIVERY ORDER / TAX INVOICE</p>
         </div>
-        <!-- <div class="pr-8 text-sm font-normal">
-          <VueBarcode v-if="getItem(0).sh_running" :value="String(getItem(0).sh_running)" format="CODE128" :height="40"
-            :width="1.2" :display-value="false" />
+        <div v-if="invoices.data?.sh_sumprice" class="pr-8 text-sm font-normal">
+            <v-barcode height="30" displayValue="false" width="1.5" :value="invoices.data?.sh_sumprice" />
           <p class="flex justify-center">Invoice No.</p>
-        </div> -->
+        </div>
       </div>
 
       <div class="parent">
@@ -211,7 +209,7 @@
         <div class="Note text-xs">
           <p class="font-bold">หมายเหตุ:</p>
           <ul class="font-bold text-[8px]">
-            <li>เรียนท่านลูกค้า อำเภทเมืองสงขลา สิงหนคร และสทิงพระ ผู้มีอุปการะคุณทุกท่าน</li>
+            <li>เรียนท่านลูกค้า อำเภอเมืองสงขลา สิงหนคร และสทิงพระ ผู้มีอุปการะคุณทุกท่าน</li>
             <li>วังเภสัชได้ปรับปรุงบริการ</li>
             <li>ออเดอร์เวลา 15:01 - 09:00 น. จัดส่งถึงท่านก่อน 13:00 น.</li>
             <li>ออเดอร์เวลา 09:01 - 15:00 น. จัดส่งถึงท่านก่อน 19:00 น.</li>
@@ -236,11 +234,16 @@
             <p>063-525-2235</p>
           </div>
         </div>
-        <div class="Payment text-sm ">
-          <!-- <VueBarcode v-if="getItem(0).sh_sumprice" :value="String(getItem(0).sh_sumprice)" format="CODE128"
-            :height="40" :width="1.2" :display-value="false" /> -->
-
-          <p class="flex justify-center">Payment</p>
+        <div v-if="invoices.data?.sh_sumprice" class="Payment text-sm mt-4 flex flex-col items-center space-y-2 mr-20">
+          <v-barcode
+            :value="invoices.data?.sh_sumprice"
+            format="CODE128"
+            :height="30"
+            :width="1.5"
+            :display-value="false"
+            class="mb-1"
+          />
+          <p class="text-center">Payment</p>
         </div>
       </div>
     </div>
@@ -248,33 +251,64 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, computed, watch, defineProps, nextTick } from 'vue'
-import axios, { formToJSON } from 'axios'
+import { onMounted, ref} from 'vue'
+import axios from 'axios'
 import QrcodeVue from "qrcode.vue";
 import { useRoute } from 'vue-router'
-import VueBarcode from 'vue3-barcode'
-import BarcodeDisplay1 from "~/components/BarcodeDisplay1.vue";
+import { VBarcode } from "vbarcode";
 
 const router = useRoute()
-const maxRows = 15 // จำนวนแถวที่ต้องการแสดงล่วงหน้า
-const sh_running = router.query.sh_running as string 
+const maxRows = 15
+const pages = ref(0)
+const sh_running = router.query.sh_running as string
+const maxRetry = 3
+const retryDelay = 1000 
+const retryCount = ref(0)
+
+
 console.log(sh_running)
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTIxODU5OSwiZXhwIjoxNzQ1MjU0NTk5fQ.Oj0amNzFpbPxXC9Jr39-Vfr336tnjrXqsozXgovX52Q"
-const invoices = await axios.get(`http://localhost:3002/api/invoice/print/${sh_running}`,{
-  headers: {
-      Authorization: `Bearer ${token}`
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTM5MzQxMSwiZXhwIjoxNzQ1NDI5NDExfQ.B3hITDOlCVRq9xjQpoUI8UvK7r7Hbwi6P9inqxOJiHA"
+
+const channel = new BroadcastChannel('invoice-channel-vat');
+
+const fetchInvoice = async () => {
+  try { 
+    const res = await axios.get(`http://localhost:3002/api/invoice/print/${sh_running}`,{
+      headers: {
+          Authorization: `Bearer ${token}`
+      }
+    })
+    if(res) {
+      return res
+    }
+  }catch(error) {
+    retryCount.value++
+    if (retryCount.value <= maxRetry) {
+      console.warn(`Retry #${retryCount.value}`)
+      setTimeout(fetchInvoice, retryDelay)
+    } else {
+      console.error('โหลดไม่สำเร็จหลัง retry ครบแล้ว')
+      // channel.postMessage({ type: 'error' })
+      localStorage.setItem('error', 'true')
+      window.close();  
+    }
+  }
+}
+const invoices = await fetchInvoice()
+onMounted( async () => {
+  console.log(invoices)
+  pages.value = await Math.ceil((invoices?.data?.shopping_order?.length || 0) / maxRows)
+  await nextTick()
+  if(invoices){
+    requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.print()
+      window.close()
+      channel.postMessage({ type: 'printed' })
+    })
+  })
   }
 })
-
-
-const pages = Math.ceil(invoices.data.shopping_order.length / maxRows)
-console.log('page', pages)
-onMounted(() => {
-  window.print(); 
-  localStorage.removeItem("isPrinting")
-  window.close();
-})
-
 
 function formatNumber(value: number | string | undefined | null): string {
   if (!value && value !== 0) return '\u00A0' // ช่องว่าง

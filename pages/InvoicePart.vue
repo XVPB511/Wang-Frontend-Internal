@@ -64,7 +64,7 @@
 //   layout: 'check-login'
 // })
 
-import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
 import { socketpart } from "../components/socket";
@@ -72,39 +72,22 @@ import { socketpart } from "../components/socket";
 const config = useRuntimeConfig()
 const router = useRouter()
 
-const offset = ref(0)
-const limit = ref(10)
-
-function handlePreviousBtn() {
-    offset.value = offset.value - 10
-    if (offset.value <= 0) {
-        offset.value = 0
-    }
-    loadInvoices(offset.value, limit.value)
-    console.log("offset.val", offset.value)
+const alertToast = useToast()
+function showToastPrint () {
+    localStorage.removeItem('error')
+    alertToast.add({title: 'Something Wrong in Print Page', color: 'error'})
+    setTimeout(() => {
+      location.reload();
+    }, 5000)
+}
+function showToastList () {
+    localStorage.removeItem('error')
+    alertToast.add({title: 'Something Wrong in Web Socket', color: 'error'})
+    setTimeout(() => {
+      location.reload();
+    }, 5000)
 }
 
-function handleNextBtn() {
-
-    // offset.value = 0
-    // limit.value = 10
-
-    offset.value = offset.value + 10
-    loadInvoices(offset.value, limit.value)
-
-    console.log("offset.val", offset.value)
-
-    // loadInvoices()
-}
-
-function loadInvoices(offset: number, limit: number) {
-    socketpart.emit('invoice:get', { offset, limit })
-
-    // output.value += `\n📤 Requesting invoices with offset: ${offset}, limit: ${limit}\n`
-}
-
-// GPT code start
-// Define the updated TypeScript interface for the invoice data
 interface InvoiceFromAPI {
     mem_code: string;
     mem_name: string;
@@ -125,7 +108,6 @@ interface Invoice extends InvoiceFromAPI {
 }
 const invoices = ref<Invoice[]>([])
 
-// Columns definition with the updated interface
 const columns: TableColumn<Invoice>[] = [
     {
         id: 'index',
@@ -197,67 +179,110 @@ const columns: TableColumn<Invoice>[] = [
     
 ];
 
-socketpart.on('connect', () => {
-    console.log('✅ WebSocket Connected')
-})
+const handleInvoicePrint = (data: InvoiceFromAPI[]) => {
+  invoices.value = data.map((item) => ({ ...item, isPrinted: false }));
+};
 
-socketpart.on('disconnect', () => {
-    console.log('🔌 WebSocket Disconnected')
-})
+const channel = new BroadcastChannel("invoice-channel-part");
+let err: boolean = false;
+let canPrint: boolean = true;
+const connectionError = ref(false);
 
-socketpart.on('invoice:print', (data) => {
-    // console.log(data)
-    const originalValueFromBackend = data as InvoiceFromAPI[]
-
-    invoices.value = originalValueFromBackend.map((item) => {
-        return {
-            ...item,
-            isPrinted: false
-        }
-    });
-    return data;
-})
-
-// function checkPrint() {
-//     console.log("invoices.value.length ", invoices.value.length)
-// }
-
-// GPT code end
 onMounted(() => {
 
-    socketpart.emit('invoice:get', { offset, limit })
+  let retryCount = 0;
+  const maxRetry = 3;
+  let retryTimeout: NodeJS.Timeout | null = null;
 
-    socketpart.on('connect', () => {
-        console.log('✅ WebSocket Connected')
-    })
+  const tryReconnect = () => {
+    if (retryCount < maxRetry) {
+      retryCount++;
+      console.log(`🔁 Retry WebSocket Connection Attempt ${retryCount}`);
+      socketpart.connect();
+    } else {
+      console.error("❌ WebSocket Connection Failed after 3 retries. Refreshing...");
+      showToastList();
+      connectionError.value = true;
+      setTimeout(() => {
+        location.reload();
+      }, 5000);
+    }
+  }
 
-    socketpart.on('disconnect', () => {
-        console.log('🔌 WebSocket Disconnected')
-    })
+  socketpart.on("connect", () => {
+    console.log("✅ WebSocket Connected");
+    retryCount = 0;
+    if (retryTimeout) {
+      clearTimeout(retryTimeout);
+    }
+  });
 
-    setInterval(() => {
-        const isPrinting = localStorage.getItem("isPrinting")
-        if (!isPrinting && invoices.value.length > 0) {
-            localStorage.setItem("isPrinting", "true")
-            // const toPrint = invoices.value[0]
-            const toPrint = invoices.value.find((invoice) => invoice.isPrinted === false)
-            if (toPrint) {
-                toPrint.isPrinted = true
-                const routeData = router.resolve({ name: 'FormatPart', query: { sh_running: toPrint.sh_running } })
-                console.log("routeData ", routeData)
-                console.log("process.server", import.meta.server)
-                console.log("process.client", import.meta.client)
-                window.open(routeData.href, '_blank')
-                socketpart.emit('invoice:printed', { sh_running: invoices.value[0].sh_running });
-            }
-        }
-    }, 5000)
+  socketpart.on("disconnect", () => {
+    console.log("🔌 WebSocket Disconnected");
+    retryTimeout = setTimeout(() => {
+      tryReconnect();
+    }, 3000);
+  });
 
-})
+  socketpart.on("connect_error", (err) => {
+    console.error("❌ WebSocket Connect Error", err.message);
+    if (retryTimeout) clearTimeout(retryTimeout);
+    tryReconnect();
+  });
 
-const socketStatus = computed(() => {
-    return socketpart.connected
-})
+  socketpart.on("invoice:print", handleInvoicePrint);
+
+  channel.addEventListener("message", (event) => {
+    if (event.data.type === "printed") {
+      socketpart.emit('invoice:printed',{sh_running: invoices.value[index].sh_running})
+      canPrint = true;
+    }
+  });
+
+  let index = 0;
+
+  const invoicePrint = () => setTimeout(() => {
+    const errprint = localStorage.getItem('error')
+    let isGoingtoReload = false
+    console.log(errprint)
+    if(errprint) {
+        showToastPrint()
+        return
+    }
+    if (index <= invoices.value.length && !err && canPrint) {
+      const toPrint = invoices.value[index];
+      if (!toPrint.isPrinted) {
+        err = false;
+        toPrint.isPrinted = true;
+        const routeData = router.resolve({
+          name: "FormatPart",
+          query: { sh_running: toPrint.sh_running },
+        });
+        canPrint = false;
+        window.open(routeData.href, "_blank");
+        console.log('index : ', index)
+        index++;
+      }
+
+      if (index+1 > invoices.value.length) {
+        console.log('มันทำอันนี้เปล่าวะ')
+        // invoicePrint()
+        isGoingtoReload = true
+        index = 0;
+        setTimeout(() => {
+          invoicePrint()
+        }, 2000);
+      } 
+    }
+    if(!isGoingtoReload) {
+      invoicePrint()
+    }
+  }, 5000);
+
+  setTimeout(() => {
+    invoicePrint()
+  }, 5000)
+});
 
 const RefreshToken = async () => {
     const refreshT = sessionStorage.getItem('refreshtoken')
@@ -269,17 +294,4 @@ const RefreshToken = async () => {
     sessionStorage.setItem('token', response?.data?.access_token)
     sessionStorage.setItem('refreshtoken', response?.data?.refresh_token)
 }
-
-// const handlePrint = async (id: string, rowData: any) => {
-
-//     try {
-//         const routeData = router.resolve({ name: 'print-preview', query: { sh_running: id } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
-//         console.log(routeData)
-//         // window.open(routeData.href, '_blank')
-
-//     } catch (error) {
-//         console.error('เกิดข้อผิดพลาดขณะพิมพ์:', error);
-//     }
-
-// }
 </script>
