@@ -68,10 +68,16 @@
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
-import { socket } from "../components/socket";
+import { createSockets } from '../components/socket';
+// import { useClient } from '#app'
 
-const config = useRuntimeConfig()
-const router = useRouter()
+// const token: any = useClient() ? sessionStorage.getItem('token') : null;
+// console.log(token)
+const { socket } = createSockets();
+
+
+// const config = useRuntimeConfig()
+// const router = useRouter()
 
 const offset = ref(0)
 const limit = ref(10)
@@ -79,9 +85,11 @@ const limit = ref(10)
 // GPT code start
 // Define the updated TypeScript interface for the invoice data
 interface Invoice {
-  mem_code: string;
-  mem_name: string;
-  emp_code: string;
+  members: {
+        mem_code: string;
+        mem_name: string;
+        emp_code: string;
+    }
   sh_running: string;
   sh_memcode: string;
   sh_listsale: number;
@@ -140,9 +148,28 @@ const columns: TableColumn<Invoice>[] = [
     cell: ({ row }) => `${row.getValue('sh_sumprice')}`,
   },
   {
-    accessorKey: 'sh_datetime',
-    header: 'วันที่ใบจอง',
-    cell: ({ row }) => `${row.getValue('sh_datetime')}`,
+    accessorKey: "sh_datetime",
+    header: "วันที่ในใบจอง",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sh_datetime"));
+      return date.toLocaleDateString("th-TH", {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    }
+  },
+  {
+    accessorKey: "sh_datetime",
+    header: "เวลาในใบจอง",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sh_datetime"));
+      return date.toLocaleTimeString("th-TH",{
+        hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+      });
+    }
   },
   {
     accessorKey: 'sh_print',
@@ -162,10 +189,11 @@ const columns: TableColumn<Invoice>[] = [
   {
     accessorKey: 'qc_timePrint',
     header: 'วันที่พิมพ์ QC',
-    cell: ({ row }) => `${row.getValue('qc_timePrint')}`,
+    cell: ({ row }) => `${row.getValue('qc_timePrint') ?? "ยังไม่ได้พิมพ์"}`,
   },
 
 ];
+// console.log("invoices " + invoices)
 
 socket.on('connect', () => {
   console.log('✅ WebSocket Connected')
@@ -225,33 +253,33 @@ function loadInvoices(offset: number, limit: number) {
   // output.value += `\n📤 Requesting invoices with offset: ${offset}, limit: ${limit}\n`
 }
 
-const RefreshToken = async () => {
-  const refreshT = sessionStorage.getItem('refreshtoken')
-  const response = await axios.post(config.public.apiBase + '/api/auth/refresh', {
-    refreshToken: refreshT
-  })
-  alert(JSON.stringify(response.data))
+// const RefreshToken = async () => {
+//   const refreshT = sessionStorage.getItem('refreshtoken')
+//   const response = await axios.post(config.public.apiBase + '/api/auth/refresh', {
+//     refreshToken: refreshT
+//   })
+//   alert(JSON.stringify(response.data))
 
-  sessionStorage.setItem('token', response?.data?.access_token)
-  sessionStorage.setItem('refreshtoken', response?.data?.refresh_token)
-}
+//   sessionStorage.setItem('token', response?.data?.access_token)
+//   sessionStorage.setItem('refreshtoken', response?.data?.refresh_token)
+// }
 
-const handlePrint = async (id: string, rowData: any) => {
+// const handlePrint = async (id: string, rowData: any) => {
 
-  try {
-    const routeData = router.resolve({ name: 'print-preview', query: { sh_running: id } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
-    console.log(routeData)
-    window.open(routeData.href, '_blank')
+//   try {
+//     const routeData = router.resolve({ name: 'print-preview', query: { sh_running: id } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
+//     console.log(routeData)
+//     window.open(routeData.href, '_blank')
 
 
-    // หลังจากยิง API เสร็จ ให้ redirect ไปหน้าใหม่
-    // router.push(`/print-preview`); ///qc_invoice=${rowData.qc_invoice}
+//     // หลังจากยิง API เสร็จ ให้ redirect ไปหน้าใหม่
+//     // router.push(`/print-preview`); ///qc_invoice=${rowData.qc_invoice}
 
-  } catch (error) {
-    console.error('เกิดข้อผิดพลาดขณะพิมพ์:', error);
-  }
+//   } catch (error) {
+//     console.error('เกิดข้อผิดพลาดขณะพิมพ์:', error);
+//   }
 
-}
+// }
 </script>
 <!-- <style>
   @media print {
