@@ -191,9 +191,8 @@ const columns: TableColumn<Invoice>[] = [
     header: 'วันที่พิมพ์ QC',
     cell: ({ row }) => `${row.getValue('qc_timePrint') ?? "ยังไม่ได้พิมพ์"}`,
   },
-
+  
 ];
-// console.log("invoices " + invoices)
 
 socket.on('connect', () => {
   console.log('✅ WebSocket Connected')
@@ -210,9 +209,20 @@ socket.on('invoice:list', (data) => {
   return data;
 })
 
+onBeforeUnmount(() => {
+  location.reload()
+})
+
 // GPT code end
 onMounted(() => {
+  const hasRefreshed = sessionStorage.getItem('hasRefreshedAfterLogin')
 
+  if (hasRefreshed !== 'true') {
+    sessionStorage.setItem('hasRefreshedAfterLogin', 'true')
+    location.reload() // รีเฟรชแค่รอบแรก
+    return
+  }
+  
   socket.emit('invoice:get', { offset: offset.value, limit: limit.value })
   socket.on('connect', () => {
     console.log('✅ WebSocket Connected')
@@ -222,6 +232,7 @@ onMounted(() => {
     console.log('🔌 WebSocket Disconnected')
   })
 })
+
 
 const socketStatus = computed(() => {
   return socket.connected
