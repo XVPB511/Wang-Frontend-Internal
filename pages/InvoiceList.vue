@@ -61,9 +61,9 @@
 
 <script setup lang="ts">
 
-// definePageMeta({
-//   layout: 'check-login'
-// })
+definePageMeta({
+  layout: 'check-login'
+})
 
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
