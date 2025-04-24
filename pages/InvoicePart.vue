@@ -31,7 +31,7 @@
           />
         </div>
   
-        <div class="flex justify-end space-x-2">
+        <!-- <div class="flex justify-end space-x-2">
           <button
             @click="handlePreviousBtn"
             class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-md"
@@ -44,7 +44,7 @@
           >
             ➡
           </button>
-        </div>
+        </div> -->
   
         <div>
           <UTable
@@ -89,9 +89,11 @@ function showToastList () {
 }
 
 interface InvoiceFromAPI {
-    mem_code: string;
-    mem_name: string;
-    emp_code: string;
+    members: {
+        mem_code: string;
+        mem_name: string;
+        emp_code: string;
+    }
     sh_running: string;
     sh_memcode: string;
     sh_listsale: number;
@@ -152,10 +154,29 @@ const columns: TableColumn<Invoice>[] = [
         cell: ({ row }) => `${row.getValue('sh_sumprice')}`,
     },
     {
-        accessorKey: 'sh_datetime',
-        header: 'วันที่ใบจอง',
-        cell: ({ row }) => `${row.getValue('sh_datetime')}`,
-    },
+    accessorKey: "sh_datetime",
+    header: "วันที่ในใบจอง",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sh_datetime"));
+      return date.toLocaleDateString("th-TH", {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    }
+  },
+  {
+    accessorKey: "sh_datetime",
+    header: "เวลาในใบจอง",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sh_datetime"));
+      return date.toLocaleTimeString("th-TH",{
+        hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+      });
+    }
+  },
     {
         accessorKey: 'sh_print',
         header: 'จำนวนพิมพ์',
@@ -165,16 +186,6 @@ const columns: TableColumn<Invoice>[] = [
         accessorKey: 'qc_invoice',
         header: 'เลขบิล QC',
         cell: ({ row }) => `${row.getValue('qc_invoice')}`,
-    },
-    {
-        accessorKey: 'qc_print',
-        header: 'จำนวนพิมพ์ QC',
-        cell: ({ row }) => `${row.getValue('qc_print')}`,
-    },
-    {
-        accessorKey: 'qc_timePrice',
-        header: 'วันที่พิมพ์ QC',
-        cell: ({ row }) => `${row.getValue('qc_timePrice')}`,
     },
     
 ];

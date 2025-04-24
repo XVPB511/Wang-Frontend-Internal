@@ -79,9 +79,11 @@ const limit = ref(10)
 // GPT code start
 // Define the updated TypeScript interface for the invoice data
 interface Invoice {
-  mem_code: string;
-  mem_name: string;
-  emp_code: string;
+  members: {
+        mem_code: string;
+        mem_name: string;
+        emp_code: string;
+    }
   sh_running: string;
   sh_memcode: string;
   sh_listsale: number;
@@ -140,9 +142,28 @@ const columns: TableColumn<Invoice>[] = [
     cell: ({ row }) => `${row.getValue('sh_sumprice')}`,
   },
   {
-    accessorKey: 'sh_datetime',
-    header: 'วันที่ใบจอง',
-    cell: ({ row }) => `${row.getValue('sh_datetime')}`,
+    accessorKey: "sh_datetime",
+    header: "วันที่ในใบจอง",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sh_datetime"));
+      return date.toLocaleDateString("th-TH", {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    }
+  },
+  {
+    accessorKey: "sh_datetime",
+    header: "เวลาในใบจอง",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sh_datetime"));
+      return date.toLocaleTimeString("th-TH",{
+        hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+      });
+    }
   },
   {
     accessorKey: 'sh_print',
@@ -162,7 +183,7 @@ const columns: TableColumn<Invoice>[] = [
   {
     accessorKey: 'qc_timePrint',
     header: 'วันที่พิมพ์ QC',
-    cell: ({ row }) => `${row.getValue('qc_timePrint')}`,
+    cell: ({ row }) => `${row.getValue('qc_timePrint') ?? "ยังไม่ได้พิมพ์"}`,
   },
 
 ];

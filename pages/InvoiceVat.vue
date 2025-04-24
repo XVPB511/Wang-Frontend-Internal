@@ -8,25 +8,16 @@
 
         <div class="flex space-x-2">
           <div class="flex">
-            <input
-              type="text"
-              placeholder="เลขที่ใบจอง (so_running)"
-              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
-            />
-            <button
-              class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600"
-            >
+            <input type="text" placeholder="เลขที่ใบจอง (so_running)"
+              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300 text-black" />
+            <button class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600">
               ค้นหา
             </button>
           </div>
           <div class="flex">
-            <input
-              type="date"
-              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
-            />
-            <button
-              class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600"
-            >
+            <input type="date"
+              class="border border-gray-300 rounded-l-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sky-300 text-black" />
+            <button class="bg-sky-500 text-white px-4 rounded-r-md hover:bg-sky-600">
               ค้นหา
             </button>
           </div>
@@ -34,26 +25,15 @@
       </div>
 
       <div class="flex justify-end">
-        <div
-          v-if="err"
-          class="bg-red-300 align-middle p-2 mr-2 rounded-md w-full flex"
-        >
+        <div v-if="err" class="bg-red-300 align-middle p-2 mr-2 rounded-md w-full flex">
           <p class="text-black">Invoice service is down please refresh</p>
           <!-- <button class="bg-">refresh</button> -->
         </div>
-        <input
-          type="text"
-          placeholder="🔍 สแกน หมายเหตุ เลข เพื่อสั่งพิมพ์บิลใหม่"
-          class="border border-gray-300 w-96 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300 text-black"
-        />
+        <input type="text" placeholder="🔍 สแกน หมายเหตุ เลข เพื่อสั่งพิมพ์บิลใหม่"
+          class="border border-gray-300 w-96 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-300 text-black" />
       </div>
       <div>
-        <UTable
-          :data="invoices"
-          class="text-black"
-          :columns="columns"
-          :enable-column-resizing="true"
-        />
+        <UTable :data="invoices" class="text-black" :columns="columns" :enable-column-resizing="true" />
       </div>
     </div>
   </div>
@@ -73,26 +53,28 @@ const config = useRuntimeConfig();
 const router = useRouter();
 
 const alertToast = useToast()
-function showToastPrint () {
-    localStorage.removeItem('error')
-    alertToast.add({title: 'Something Wrong in Print Page', color: 'error'})
-    setTimeout(() => {
-      location.reload();
-    }, 5000)
+function showToastPrint() {
+  localStorage.removeItem('error')
+  alertToast.add({ title: 'Something Wrong in Print Page', color: 'error' })
+  setTimeout(() => {
+    location.reload();
+  }, 5000)
 }
-function showToastList () {
-    localStorage.removeItem('error')
-    alertToast.add({title: 'Something Wrong in Web Socket', color: 'error'})
-    setTimeout(() => {
-      location.reload();
-    }, 5000)
+function showToastList() {
+  localStorage.removeItem('error')
+  alertToast.add({ title: 'Something Wrong in Web Socket', color: 'error' })
+  setTimeout(() => {
+    location.reload();
+  }, 5000)
 }
 
 
 interface InvoiceFromAPI {
-  mem_code: string;
-  mem_name: string;
-  emp_code: string;
+  members: {
+        mem_code: string;
+        mem_name: string;
+        emp_code: string;
+    }
   sh_running: string;
   sh_memcode: string;
   sh_listsale: number;
@@ -154,8 +136,27 @@ const columns: TableColumn<Invoice>[] = [
   },
   {
     accessorKey: "sh_datetime",
-    header: "วันที่ใบจอง",
-    cell: ({ row }) => `${row.getValue("sh_datetime")}`,
+    header: "วันที่ในใบจอง",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sh_datetime"));
+      return date.toLocaleDateString("th-TH", {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    }
+  },
+  {
+    accessorKey: "sh_datetime",
+    header: "เวลาในใบจอง",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("sh_datetime"));
+      return date.toLocaleTimeString("th-TH",{
+        hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+      });
+    }
   },
   {
     accessorKey: "sh_print",
@@ -166,16 +167,6 @@ const columns: TableColumn<Invoice>[] = [
     accessorKey: "qc_invoice",
     header: "เลขบิล QC",
     cell: ({ row }) => `${row.getValue("qc_invoice")}`,
-  },
-  {
-    accessorKey: "qc_print",
-    header: "จำนวนพิมพ์ QC",
-    cell: ({ row }) => `${row.getValue("qc_print")}`,
-  },
-  {
-    accessorKey: "qc_timePrint",
-    header: "วันที่พิมพ์ QC",
-    cell: ({ row }) => `${row.getValue("qc_timePrint")}`,
   },
 ];
 
@@ -237,7 +228,7 @@ onMounted(() => {
 
   channel.addEventListener("message", (event) => {
     if (event.data.type === "printed") {
-      socketvat.emit('invoice:printed',{sh_running: invoices.value[index].sh_running})
+      socketvat.emit('invoice:printed', { sh_running: invoices.value[index].sh_running })
       canPrint = true;
     }
   });
@@ -248,9 +239,9 @@ onMounted(() => {
     const errprint = localStorage.getItem('error')
     let isGoingtoReload = false
     console.log(errprint)
-    if(errprint) {
-        showToastPrint()
-        return
+    if (errprint) {
+      showToastPrint()
+      return
     }
     if (index <= invoices.value.length && !err && canPrint) {
       const toPrint = invoices.value[index];
@@ -267,7 +258,7 @@ onMounted(() => {
         index++;
       }
 
-      if (index+1 > invoices.value.length) {
+      if (index + 1 > invoices.value.length) {
         console.log('มันทำอันนี้เปล่าวะ')
         // invoicePrint()
         isGoingtoReload = true
@@ -276,9 +267,9 @@ onMounted(() => {
           invoicePrint()
           // location.reload();
         }, 2000);
-      } 
+      }
     }
-    if(!isGoingtoReload) {
+    if (!isGoingtoReload) {
       invoicePrint()
     }
   }, 5000);
