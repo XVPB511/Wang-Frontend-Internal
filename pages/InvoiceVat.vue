@@ -40,9 +40,9 @@
 </template>
 
 <script setup lang="ts">
-// definePageMeta({
-//   layout: 'check-login'
-// })
+definePageMeta({
+  layout: 'check-login'
+})
 
 import { onMounted, ref } from "vue";
 import type { TableColumn } from "@nuxt/ui";
