@@ -267,7 +267,7 @@ const maxRetry = 3
 const retryDelay = 1000 
 const retryCount = ref(0)
 
-const token = sessionStorage.getItem("token")
+const token = import.meta.client ? sessionStorage.getItem("token") : null;
 console.log(sh_running)
 
 const channel = new BroadcastChannel('invoice-channel-vat');
