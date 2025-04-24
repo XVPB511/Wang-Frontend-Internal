@@ -184,11 +184,6 @@ const columns: TableColumn<Invoice>[] = [
     }
   },
     {
-        accessorKey: 'sh_print',
-        header: 'จำนวนพิมพ์',
-        cell: ({ row }) => `${row.getValue('sh_print')}`,
-    },
-    {
         accessorKey: 'qc_invoice',
         header: 'เลขบิล QC',
         cell: ({ row }) => `${row.getValue('qc_invoice')}`,

@@ -118,19 +118,19 @@ const columns: TableColumn<Invoice>[] = [
     cell: ({ row }) => `${row.getValue('sh_running')}`,
   },
   {
-    accessorKey: 'mem_code',
+    accessorKey: 'sh_memcode',
     header: 'รหัสสมาชิก',
-    cell: ({ row }) => `${row.original.members?.mem_code ?? '-'}`,
+    cell: ({ row }) => `${row.original.sh_memcode ?? '-'}`,
   },
   {
     accessorKey: 'mem_name',
     header: 'นามร้าน',
-    cell: ({ row }) => `${row.original.members?.mem_name ?? '-'}`,
+    cell: ({ row }) => `${row.original.mem_name ?? '-'}`,
   },
   {
     accessorKey: 'emp_code',
     header: 'รหัสพนักงาน',
-    cell: ({ row }) => `${row.original.members?.emp_code ?? '-'}`,
+    cell: ({ row }) => `${row.original.emp_code ?? '-'}`,
   },
   {
     accessorKey: 'sh_listsale',
@@ -204,7 +204,7 @@ socket.on('disconnect', () => {
 })
 
 socket.on('invoice:list', (data) => {
-  // console.log(data)
+  console.log(data)
   invoices.value = data as Invoice[];
 
   return data;

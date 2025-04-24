@@ -9,19 +9,19 @@
                     <div class="bg-sky-500/75 px-10">
                         WangPharmacy
                     </div>
-                    <div>
+                    <div class="mx-2">
                         menu
                     </div>
                 </div>
                 <div class="flex">
-                    <div>
+                    <div class="mx-2">
                         peerapon
                     </div>
                     <div>
                         icon
                     </div>
                     <div>
-                        <button @click="handleLogout">logout</button>
+                        <button @click="handleLogout" class="bg-white px-2 border text-black ml-2 rounded-sm">logout</button>
                     </div>
                 </div>
             </div>
