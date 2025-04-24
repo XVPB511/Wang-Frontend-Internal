@@ -257,6 +257,8 @@ import QrcodeVue from "qrcode.vue";
 import { useRoute } from 'vue-router'
 import { VBarcode } from "vbarcode";
 
+
+
 const router = useRoute()
 const maxRows = 15
 const pages = ref(0)
@@ -265,9 +267,8 @@ const maxRetry = 3
 const retryDelay = 1000 
 const retryCount = ref(0)
 
-
+const token = sessionStorage.getItem("token")
 console.log(sh_running)
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTM5MzQxMSwiZXhwIjoxNzQ1NDI5NDExfQ.B3hITDOlCVRq9xjQpoUI8UvK7r7Hbwi6P9inqxOJiHA"
 
 const channel = new BroadcastChannel('invoice-channel-vat');
 

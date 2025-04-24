@@ -68,10 +68,16 @@
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
-import { socket } from "../components/socket";
+import { createSockets } from '../components/socket';
+// import { useClient } from '#app'
 
-const config = useRuntimeConfig()
-const router = useRouter()
+// const token: any = useClient() ? sessionStorage.getItem('token') : null;
+// console.log(token)
+const { socket } = createSockets();
+
+
+// const config = useRuntimeConfig()
+// const router = useRouter()
 
 const offset = ref(0)
 const limit = ref(10)
@@ -187,6 +193,7 @@ const columns: TableColumn<Invoice>[] = [
   },
 
 ];
+// console.log("invoices " + invoices)
 
 socket.on('connect', () => {
   console.log('✅ WebSocket Connected')
@@ -246,33 +253,33 @@ function loadInvoices(offset: number, limit: number) {
   // output.value += `\n📤 Requesting invoices with offset: ${offset}, limit: ${limit}\n`
 }
 
-const RefreshToken = async () => {
-  const refreshT = sessionStorage.getItem('refreshtoken')
-  const response = await axios.post(config.public.apiBase + '/api/auth/refresh', {
-    refreshToken: refreshT
-  })
-  alert(JSON.stringify(response.data))
+// const RefreshToken = async () => {
+//   const refreshT = sessionStorage.getItem('refreshtoken')
+//   const response = await axios.post(config.public.apiBase + '/api/auth/refresh', {
+//     refreshToken: refreshT
+//   })
+//   alert(JSON.stringify(response.data))
 
-  sessionStorage.setItem('token', response?.data?.access_token)
-  sessionStorage.setItem('refreshtoken', response?.data?.refresh_token)
-}
+//   sessionStorage.setItem('token', response?.data?.access_token)
+//   sessionStorage.setItem('refreshtoken', response?.data?.refresh_token)
+// }
 
-const handlePrint = async (id: string, rowData: any) => {
+// const handlePrint = async (id: string, rowData: any) => {
 
-  try {
-    const routeData = router.resolve({ name: 'print-preview', query: { sh_running: id } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
-    console.log(routeData)
-    window.open(routeData.href, '_blank')
+//   try {
+//     const routeData = router.resolve({ name: 'print-preview', query: { sh_running: id } }) // เปลี่ยนเป็นชื่อ route ที่ต้องการ
+//     console.log(routeData)
+//     window.open(routeData.href, '_blank')
 
 
-    // หลังจากยิง API เสร็จ ให้ redirect ไปหน้าใหม่
-    // router.push(`/print-preview`); ///qc_invoice=${rowData.qc_invoice}
+//     // หลังจากยิง API เสร็จ ให้ redirect ไปหน้าใหม่
+//     // router.push(`/print-preview`); ///qc_invoice=${rowData.qc_invoice}
 
-  } catch (error) {
-    console.error('เกิดข้อผิดพลาดขณะพิมพ์:', error);
-  }
+//   } catch (error) {
+//     console.error('เกิดข้อผิดพลาดขณะพิมพ์:', error);
+//   }
 
-}
+// }
 </script>
 <!-- <style>
   @media print {

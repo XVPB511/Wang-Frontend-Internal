@@ -47,7 +47,9 @@
 import { onMounted, ref } from "vue";
 import type { TableColumn } from "@nuxt/ui";
 import axios from "axios";
-import { socketvat } from "../components/socket";
+import { createSockets } from "../components/socket";
+
+const { socketvat } = createSockets();
 
 const config = useRuntimeConfig();
 const router = useRouter();
@@ -89,6 +91,7 @@ interface InvoiceFromAPI {
 interface Invoice extends InvoiceFromAPI {
   isPrinted: boolean;
 }
+
 const invoices = ref<Invoice[]>([]);
 
 const columns: TableColumn<Invoice>[] = [
@@ -105,9 +108,9 @@ const columns: TableColumn<Invoice>[] = [
     cell: ({ row }) => `${row.getValue("sh_running")}`,
   },
   {
-    accessorKey: "mem_code",
+    accessorKey: "sh_memcode",
     header: "รหัสสมาชิก",
-    cell: ({ row }) => `${row.original.members?.mem_code ?? "-"}`,
+    cell: ({ row }) => `${row.original.sh_memcode ?? "-"}`,
   },
   {
     accessorKey: "mem_name",
@@ -172,6 +175,7 @@ const columns: TableColumn<Invoice>[] = [
 
 
 const handleInvoicePrint = (data: InvoiceFromAPI[]) => {
+  console.log('📦 Received invoices:', data) 
   invoices.value = data.map((item) => ({ ...item, isPrinted: false }));
 };
 
@@ -200,9 +204,6 @@ onMounted(() => {
       }, 5000);
     }
   }
-
-
-
   socketvat.on("connect", () => {
     console.log("✅ WebSocket Connected");
     retryCount = 0;

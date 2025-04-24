@@ -25,7 +25,7 @@
 
   import axios from 'axios'
   import { ref } from 'vue'
-  
+
   const email = ref('jane_smith')
   const password = ref('securePass456')
   const router = useRouter()

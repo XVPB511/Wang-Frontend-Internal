@@ -257,7 +257,7 @@ const retryCount = ref(0)
 
 
 console.log(sh_running)
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo4LCJ1c2VybmFtZSI6ImphbmVfc21pdGgiLCJlbXBfY29kZSI6IkVNUDAwOSIsInVzZXJfY3JlYXRlZCI6IjIwMjUtMDQtMTZUMDM6MjE6MjUuNzIwWiIsImlhdCI6MTc0NTMzOTc4NiwiZXhwIjoxNzQ1Mzc1Nzg2fQ.tmREosJG2VQEElOydm-wTWPXpFOQvbAf1AJ7q6dHuq4"
+const token = sessionStorage.getItem("token")
 const channel = new BroadcastChannel('invoice-channel-part');
 
 const fetchInvoice = async () => {

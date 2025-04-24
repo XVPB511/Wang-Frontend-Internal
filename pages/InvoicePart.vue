@@ -67,7 +67,13 @@
 import { onMounted, ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import axios from 'axios'
-import { socketpart } from "../components/socket";
+import { createSockets } from '~/components/socket'
+
+const { socketpart } = createSockets()
+
+// const config = useRuntimeConfig()
+// const router = useRouter()
+
 
 const config = useRuntimeConfig()
 const router = useRouter()
@@ -124,9 +130,9 @@ const columns: TableColumn<Invoice>[] = [
         cell: ({ row }) => `${row.getValue('sh_running')}`,
     },
     {
-    accessorKey: 'mem_code',
+    accessorKey: 'sh_memcode',
     header: 'รหัสสมาชิก',
-    cell: ({ row }) => `${row.original.members?.mem_code ?? '-'}`,
+    cell: ({ row }) => `${row.original.sh_memcode?? '-'}`,
   },
   {
     accessorKey: 'mem_name',
