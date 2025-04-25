@@ -18,8 +18,10 @@ const socketOptions = {
 export const createSockets = () => {
   const config = useRuntimeConfig();
 
+
   console.log('Log env: ',config.public.apiBase)
   console.log('Log env: ',config.public.apiBaseInvoice)
+
 
   return {
     socket: io(config.public.apiBaseInvoice + '/socket/all', socketOptions),

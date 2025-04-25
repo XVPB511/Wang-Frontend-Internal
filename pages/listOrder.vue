@@ -6,56 +6,56 @@
           'border p-1 rounded-sm mb-1',
           orderItem.organ && orderItem.organ.emp_id ? 'bg-green-300' : 'bg-gray-200'
         ]">
-        <div class="flex justify-stretch p-1 ">
-          <div name="Image" class="w-1/3 border">
-            <img :src="orderItem.product.img" class="w-32 h-32 object-cover" />
-          </div>
-          <div name="Detail" class="text-xs w-2/3">
-            <div class="flex justify-start pt-1 px-1 text-sm">
-              <p>{{ item.id_shop }}</p>&nbsp;
-              <p class="font-bold text-emerald-600">{{ item.name_shop }}</p>
+          <div class="flex justify-stretch p-1 ">
+            <div name="Image" class="w-1/3 border">
+              <img :src="orderItem.product.img" class="w-32 h-32 object-cover" />
             </div>
-            <div class="flex justify-between pt-1 px-1">
-              <p>{{ orderItem.product.product_id }}</p>&nbsp;
-              <p>{{ orderItem.Order_quantity }} {{ orderItem.product.unit }}</p>
-            </div>
-            <div class="flex justify-between pt-1 px-1">
-              <p class="text-amber-500 font-bold">{{ orderItem.product.product_code }}</p>&nbsp;
-              <p>เหลือ{{ orderItem.product.price }} {{ orderItem.product.unit }}</p>
-            </div>
-            <div class="flex justify-start pt-1 px-1">
-              <p>{{ orderItem.product.product_name }}</p>
-            </div>
-            <div class="flex justify-between pt-1 px-1">
-              <p>?</p>
+            <div name="Detail" class="text-xs w-2/3">
+              <div class="flex justify-start pt-1 px-1 text-sm">
+                <p>{{ item.id_shop }}</p>&nbsp;
+                <p class="font-bold text-emerald-600">{{ item.name_shop }}</p>
+              </div>
               <div class="flex justify-between pt-1 px-1">
-                <p>[{{ orderItem.emp_id }}]</p>&nbsp;
-                <p>{{ orderItem.emp_name }}</p>
+                <p>{{ orderItem.product.product_id }}</p>&nbsp;
+                <p>{{ orderItem.Order_quantity }} {{ orderItem.product.unit }}</p>
+              </div>
+              <div class="flex justify-between pt-1 px-1">
+                <p class="text-amber-500 font-bold">{{ orderItem.product.product_code }}</p>&nbsp;
+                <p>เหลือ{{ orderItem.product.price }} {{ orderItem.product.unit }}</p>
+              </div>
+              <div class="flex justify-start pt-1 px-1">
+                <p>{{ orderItem.product.product_name }}</p>
+              </div>
+              <div class="flex justify-between pt-1 px-1">
+                <p>?</p>
+                <div class="flex justify-between pt-1 px-1">
+                  <p>[{{ orderItem.emp_id }}]</p>&nbsp;
+                  <p>{{ orderItem.emp_name }}</p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="text-xs flex justify-between px-1">
-          <button class="border rounded-sm p-1 shadow-md"> 1 หมด</button>
-          <button class="border rounded-sm p-1 shadow-md"> 5 ไม่พอ</button>
-          <button class="border rounded-sm p-1 shadow-md"> 2 ไม่เจอ</button>
-          <button class="border rounded-sm p-1 shadow-md"> 3 เสีย</button>
-          <button class="border rounded-sm p-1 shadow-md"> 4 ด้านล่าง</button>
-        </div>
-        <div name="footer-detail" class="flex justify-between py-1 text-xs text-gray-500">
-          <div class="flex justify-start" :class="{ 'text-red-500': !(orderItem.organ && orderItem.organ.emp_id) }">
-            <p>{{ orderItem.organ?.emp_id || ' ' }}</p>&nbsp;
-            <p>{{ orderItem.organ?.emp_id ? 'จัดแล้ว' : 'ยังไม่จัด' }}</p>&nbsp;
-            <p>{{ orderItem.organ?.date || ' ' }}</p>&nbsp;
-            <p>{{ orderItem.organ?.time || ' ' }}</p>
+          <div class="text-xs flex justify-between px-1">
+            <button class="border rounded-sm p-1 shadow-md"> 1 หมด</button>
+            <button class="border rounded-sm p-1 shadow-md"> 5 ไม่พอ</button>
+            <button class="border rounded-sm p-1 shadow-md"> 2 ไม่เจอ</button>
+            <button class="border rounded-sm p-1 shadow-md"> 3 เสีย</button>
+            <button class="border rounded-sm p-1 shadow-md"> 4 ด้านล่าง</button>
           </div>
+          <div name="footer-detail" class="flex justify-between py-1 text-xs text-gray-500">
+            <div class="flex justify-start" :class="{ 'text-red-500': !(orderItem.organ && orderItem.organ.emp_id) }">
+              <p>{{ orderItem.organ?.emp_id || ' ' }}</p>&nbsp;
+              <p>{{ orderItem.organ?.emp_id ? 'จัดแล้ว' : 'ยังไม่จัด' }}</p>&nbsp;
+              <p>{{ orderItem.organ?.date || ' ' }}</p>&nbsp;
+              <p>{{ orderItem.organ?.time || ' ' }}</p>
+            </div>
 
-          <div class="flex justify-end pr-5">
-            <button class="border rounded-sm px-3 py-1 shadow-md">2</button>
+            <div class="flex justify-end pr-5">
+              <button class="border rounded-sm px-3 py-1 shadow-md">2</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   </div>
 </template>
@@ -128,6 +128,4 @@ const data = [{
 ]
 
 </script>
-<style>
-
-</style>
+<style></style>
