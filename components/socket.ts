@@ -17,12 +17,13 @@ const socketOptions = {
 export const createSockets = () => {
   const config = useRuntimeConfig();
 
+  console.log("URL "+config.public.apiBaseInvoice)
 
   return {
-    socket: io(config.public.apiBase + '/socket/all', socketOptions),
-    socketpart: io(config.public.apiBase + '/socket/part', socketOptions),
-    socketvat: io(config.public.apiBase + '/socket/vat', socketOptions),
-    socketprint: io(config.public.apiBase + '/invoice/print/:sh_running', {
+    socket: io(config.public.apiBaseInvoice + '/socket/all', socketOptions),
+    socketpart: io(config.public.apiBaseInvoice + '/socket/part', socketOptions),
+    socketvat: io(config.public.apiBaseInvoice + '/socket/vat', socketOptions),
+    socketprint: io(config.public.apiBaseInvoice + '/invoice/print/:sh_running', {
       ...socketOptions,
       path: '/socket.io'
     })
