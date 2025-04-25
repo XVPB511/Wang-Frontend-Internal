@@ -224,8 +224,8 @@ onMounted(() => {
 
   channel.addEventListener("message", (event) => {
     if (event.data.type === "printed") {
-      socketvat.emit('invoice:printed', { sh_running: invoices.value[index].sh_running })
-      canPrint = true;
+      // socketvat.emit('invoice:printed', { sh_running: invoices.value[index].sh_running })
+      // canPrint = true;
     }
   });
 
@@ -268,11 +268,11 @@ onMounted(() => {
     if (!isGoingtoReload) {
       invoicePrint()
     }
-  }, 5000);
+  }, 1000);
 
   setTimeout(() => {
     invoicePrint()
-  }, 5000)
+  }, 1000)
 });
 
 const RefreshToken = async () => {
