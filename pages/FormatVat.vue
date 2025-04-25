@@ -1,5 +1,6 @@
 <template>
   <div v-if="invoices" class="min-h-screen bg-white">
+    <div class="page-break"></div>
     <div v-for="page in pages" class="quotation-container">
       <div class="flex justify-between">
         <div class="">
@@ -16,7 +17,7 @@
       </div>
       <div class="meta flex justify-evenly ">
         <div class="pl-8 text-sm font-normal">
-          <QrcodeVue :value="`${invoices.data?.sh_running || ''}/${invoices.data?.sh_sumprice || ''}`" :size="50"
+          <QrcodeVue :value="`${invoices.data?.sh_running || ''}/${invoices.data?.sh_sumprice || ''}`" :size="40"
             :level="'H'" />
           <p class="flex justify-center">Checking No.</p>
         </div>
@@ -25,7 +26,7 @@
           <p>DELIVERY ORDER / TAX INVOICE</p>
         </div>
         <div v-if="invoices.data?.sh_sumprice" class="pr-8 text-sm font-normal">
-            <v-barcode height="30" displayValue="false" width="1.5" :value="invoices.data?.sh_sumprice" />
+            <v-barcode height="20" displayValue="false" width="1.5" :value="invoices.data?.sh_sumprice" />
           <p class="flex justify-center">Invoice No.</p>
         </div>
       </div>
@@ -168,7 +169,7 @@
             <p>ฝ่ายบัญชี</p>
           </div>
           <hr />
-          <div class="flex justify-between pt-5 px-3 ">
+          <div class="flex justify-between pt-2 px-1 ">
             <p>(</p>
             <p>)</p>
           </div>
@@ -185,7 +186,7 @@
             <p>ผู้ตรวจสอบรายการ</p>
           </div>
           <hr />
-          <div class="flex justify-between pt-5 px-3 ">
+          <div class="flex justify-between pt-2 px-1 ">
             <p>(</p>
             <p>)</p>
           </div>
@@ -198,7 +199,7 @@
             <p>ผู้ส่งของ</p>
           </div>
           <hr />
-          <div class="flex justify-between pt-5 px-3 ">
+          <div class="flex justify-between pt-2 px-1">
             <p>(</p>
             <p>)</p>
           </div>
@@ -234,12 +235,12 @@
             <p>063-525-2235</p>
           </div>
         </div>
-        <div v-if="invoices.data?.sh_sumprice" class="Payment text-sm mt-4 flex flex-col items-center space-y-2 mr-20">
+        <div v-if="invoices.data?.sh_sumprice" class="Payment text-sm mt-4 flex flex-col items-center mr-10">
           <v-barcode
             :value="invoices.data?.sh_sumprice"
             format="CODE128"
-            :height="30"
-            :width="1.5"
+            :height="15"
+            :width="0.8"
             :display-value="false"
             class="mb-1"
           />
@@ -267,7 +268,7 @@ const maxRetry = 3
 const retryDelay = 1000 
 const retryCount = ref(0)
 
-const token = sessionStorage.getItem("token")
+const token = import.meta.client ? sessionStorage.getItem("token") : null;
 console.log(sh_running)
 
 const channel = new BroadcastChannel('invoice-channel-vat');
@@ -303,8 +304,8 @@ onMounted( async () => {
   if(invoices){
     requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      window.print()
-      window.close()
+      // window.print()
+      // window.close()
       channel.postMessage({ type: 'printed' })
     })
   })
@@ -476,18 +477,20 @@ function bahtText(amount: number): string {
 
 .TotalText {
   grid-column: span 8 / span 8;
+  grid-row: 1;
 }
 
 .TotalNumTax {
   grid-column: span 4 / span 4;
-  grid-row: span 2 / span 2;
+  grid-row: span x;
   grid-column-start: 9;
 }
 
 .TotalNum {
   grid-column: span 4 / span 4;
+  grid-row:span x;
   grid-column-start: 9;
-  grid-row-start: 3;
+  grid-row-start: auto;
 }
 
 .CountPage {
@@ -529,9 +532,8 @@ function bahtText(amount: number): string {
 }
 
 .Payment {
-  grid-column: span 2 / span 2;
-  grid-column-start: 7;
-  grid-row-start: 2;
+  grid-column: 7 / span 2;
+  grid-row: 2;
 }
 
 table {

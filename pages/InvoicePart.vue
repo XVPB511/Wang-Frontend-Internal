@@ -60,9 +60,9 @@
 
 <script setup lang="ts">
 
-// definePageMeta({
-//   layout: 'check-login'
-// })
+definePageMeta({
+  layout: 'check-login'
+})
 
 import { onMounted, ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
@@ -183,11 +183,6 @@ const columns: TableColumn<Invoice>[] = [
       });
     }
   },
-    {
-        accessorKey: 'sh_print',
-        header: 'จำนวนพิมพ์',
-        cell: ({ row }) => `${row.getValue('sh_print')}`,
-    },
     {
         accessorKey: 'qc_invoice',
         header: 'เลขบิล QC',
