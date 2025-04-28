@@ -40,9 +40,9 @@
 </template>
 
 <script setup lang="ts">
-// definePageMeta({
-//   layout: 'check-login'
-// })
+definePageMeta({
+  layout: 'check-login'
+})
 
 import { onMounted, ref } from "vue";
 import type { TableColumn } from "@nuxt/ui";
@@ -162,11 +162,6 @@ const columns: TableColumn<Invoice>[] = [
     }
   },
   {
-    accessorKey: "sh_print",
-    header: "จำนวนพิมพ์",
-    cell: ({ row }) => `${row.getValue("sh_print")}`,
-  },
-  {
     accessorKey: "qc_invoice",
     header: "เลขบิล QC",
     cell: ({ row }) => `${row.getValue("qc_invoice")}`,
@@ -229,8 +224,8 @@ onMounted(() => {
 
   channel.addEventListener("message", (event) => {
     if (event.data.type === "printed") {
-      socketvat.emit('invoice:printed', { sh_running: invoices.value[index].sh_running })
-      canPrint = true;
+      // socketvat.emit('invoice:printed', { sh_running: invoices.value[index].sh_running })
+      // canPrint = true;
     }
   });
 
@@ -273,11 +268,11 @@ onMounted(() => {
     if (!isGoingtoReload) {
       invoicePrint()
     }
-  }, 5000);
+  }, 1000);
 
   setTimeout(() => {
     invoicePrint()
-  }, 5000)
+  }, 1000)
 });
 
 const RefreshToken = async () => {

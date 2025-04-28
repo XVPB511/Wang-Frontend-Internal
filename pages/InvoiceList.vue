@@ -61,9 +61,9 @@
 
 <script setup lang="ts">
 
-// definePageMeta({
-//   layout: 'check-login'
-// })
+definePageMeta({
+  layout: 'check-login'
+})
 
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
@@ -118,19 +118,19 @@ const columns: TableColumn<Invoice>[] = [
     cell: ({ row }) => `${row.getValue('sh_running')}`,
   },
   {
-    accessorKey: 'mem_code',
+    accessorKey: 'sh_memcode',
     header: 'รหัสสมาชิก',
-    cell: ({ row }) => `${row.original.members?.mem_code ?? '-'}`,
+    cell: ({ row }) => `${row.original.sh_memcode ?? '-'}`,
   },
   {
     accessorKey: 'mem_name',
     header: 'นามร้าน',
-    cell: ({ row }) => `${row.original.members?.mem_name ?? '-'}`,
+    cell: ({ row }) => `${row.original.mem_name ?? '-'}`,
   },
   {
     accessorKey: 'emp_code',
     header: 'รหัสพนักงาน',
-    cell: ({ row }) => `${row.original.members?.emp_code ?? '-'}`,
+    cell: ({ row }) => `${row.original.emp_code ?? '-'}`,
   },
   {
     accessorKey: 'sh_listsale',
@@ -191,9 +191,8 @@ const columns: TableColumn<Invoice>[] = [
     header: 'วันที่พิมพ์ QC',
     cell: ({ row }) => `${row.getValue('qc_timePrint') ?? "ยังไม่ได้พิมพ์"}`,
   },
-
+  
 ];
-// console.log("invoices " + invoices)
 
 socket.on('connect', () => {
   console.log('✅ WebSocket Connected')
@@ -204,15 +203,26 @@ socket.on('disconnect', () => {
 })
 
 socket.on('invoice:list', (data) => {
-  // console.log(data)
+  console.log(data)
   invoices.value = data as Invoice[];
 
   return data;
 })
 
+onBeforeUnmount(() => {
+  location.reload()
+})
+
 // GPT code end
 onMounted(() => {
+  const hasRefreshed = sessionStorage.getItem('hasRefreshedAfterLogin')
 
+  if (hasRefreshed !== 'true') {
+    sessionStorage.setItem('hasRefreshedAfterLogin', 'true')
+    location.reload() // รีเฟรชแค่รอบแรก
+    return
+  }
+  
   socket.emit('invoice:get', { offset: offset.value, limit: limit.value })
   socket.on('connect', () => {
     console.log('✅ WebSocket Connected')
@@ -222,6 +232,7 @@ onMounted(() => {
     console.log('🔌 WebSocket Disconnected')
   })
 })
+
 
 const socketStatus = computed(() => {
   return socket.connected
