@@ -26,6 +26,9 @@ export const createSockets = () => {
     socketprint: io(config.public.apiBaseInvoice + '/invoice/print/:sh_running', {
       ...socketOptions,
       path: '/socket.io'
-    })
+    }),
+    socketlistorder: io(config.public.apiBaseInvoice + '/socket/listorder', socketOptions),
+    socketlistproduct: io(config.public.apiBaseInvoice + '/socket/listproducts', socketOptions),
+    
   };
 }

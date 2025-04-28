@@ -13,7 +13,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: '', // can be overridden by NUXT_PUBLIC_API_BASE environment variable
+      apiBase: process.env.NUXT_PUBLIC_API_BASE,
+      apiBaseInvoice: process.env.NUXT_PUBLIC_API_BASE_INVOICE
     }
   },
 })

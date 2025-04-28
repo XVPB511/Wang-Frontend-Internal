@@ -47,47 +47,60 @@
         <slot />
         <div class="footer flex items-end justify-center">
             <div>
-                <div class="p-2 flex justify-between">
+                <div class="p-2 flex justify-around">
                     <div>
-                        <button class="border p-1">ชั้น 2</button>
+                        <button class="border border-gray-500 rounded-sm bg-orange-300 shadow-lg p-1">ชั้น 1</button>
                     </div>
                     <div>
-                        <button class="border p-1">ชั้น 3</button>
+                        <button class="border border-gray-500 rounded-sm bg-[#e3e38d] shadow-lg p-1">ชั้น 2</button>
                     </div>
                     <div>
-                        <button class="border p-1">ชั้น 4</button>
+                        <button class="border border-gray-500 rounded-sm bg-[#8d9ae3] shadow-lg p-1">ชั้น 3</button>
                     </div>
                     <div>
-                        <button class="border p-1">ชั้น 5</button>
+                        <button class="border border-gray-500 rounded-sm bg-[#e38d90] shadow-lg p-1">ชั้น 4</button>
                     </div>
                     <div>
-                        <button class="border p-1">กิมมิค</button>
+                        <button class="border border-gray-500 rounded-sm bg-[#a0dba3] shadow-lg p-1">ชั้น 5</button>
                     </div>
                     <div>
-                        <button class="border p-1">ยกลัง</button>
+                        <button class="border border-gray-500 rounded-sm bg-[#b58de3] shadow-lg p-1">ยกลัง</button>
                     </div>
                 </div>
-                <div class="flex justify-center text-[8px] p-1 ">
-                    <div class="border flex justify-start p-1">
-                        <p class="font-bold">F2</p>
-                        &nbsp;
-                        <p>22/04/68 12:09</p>
+                <div class="flex justify-around  p-1 ">
+                    <div class="border p-1">
+                        <div class="flex justify-center">
+                            <p class="font-bold text-sm">F2</p>
+                        </div>
+                        <div class="  text-[10px] flex justify-center">
+                            <p>22/04/68 12:09</p>
+                        </div>
                     </div>
-                    <div class="border flex justify-start p-1">
-                        <p class="font-bold">F3</p>
-                        &nbsp;
-                        <p>22/04/68 12:09</p>
+                    <div class="border p-1">
+                        <div class="flex justify-center">
+                            <p class="font-bold text-sm">F3</p>
+                        </div>
+                        <div class="  text-[10px] flex justify-center">
+                            <p>22/04/68 12:09</p>
+                        </div>
                     </div>
-                    <div class="border flex justify-start p-1">
-                        <p class="font-bold">F4</p>
-                        &nbsp;
-                        <p>22/04/68 12:09</p>
+                    <div class="border p-1">
+                        <div class="flex justify-center">
+                            <p class="font-bold text-sm">F4</p>
+                        </div>
+                        <div class="  text-[10px] flex justify-center">
+                            <p>22/04/68 12:09</p>
+                        </div>
                     </div>
-                    <div class="border flex justify-start p-1">
-                        <p class="font-bold">F5</p>
-                        &nbsp;
-                        <p>22/04/68 12:09</p>
+                    <div class="border p-1">
+                        <div class="flex justify-center">
+                            <p class="font-bold text-sm">F5</p>
+                        </div>
+                        <div class=" text-[10px] flex justify-center">
+                            <p>22/04/68 12:09</p>
+                        </div>
                     </div>
+                    
                 </div>
             </div>
         </div>

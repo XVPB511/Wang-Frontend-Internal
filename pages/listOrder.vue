@@ -1,131 +1,207 @@
 <template>
-  <div class="bg-blue-100 overflow-y-auto p-1">
-    <div v-for="(item, index) in data" :key="index">
-      <div v-for="(orderItem, index) in item.order" :key="index">
-        <div :class="[
-          'border p-1 rounded-sm mb-1',
-          orderItem.organ && orderItem.organ.emp_id ? 'bg-green-300' : 'bg-gray-200'
-        ]">
-          <div class="flex justify-stretch p-1 ">
-            <div name="Image" class="w-1/3 border">
-              <img :src="orderItem.product.img" class="w-32 h-32 object-cover" />
-            </div>
-            <div name="Detail" class="text-xs w-2/3">
-              <div class="flex justify-start pt-1 px-1 text-sm">
-                <p>{{ item.id_shop }}</p>&nbsp;
-                <p class="font-bold text-emerald-600">{{ item.name_shop }}</p>
+  <div class="content bg-blue-100 overflow-y-auto p-1">
+    <div v-if="!listproduct" class="flex justify-center font-bold text-2xl item-center">
+      <p>Loading...</p>
+    </div>
+    <div v-else-if="listproduct">
+      <div v-for="(head, headIdx) in listproduct.shoppingHeads" :key="headIdx">
+        <div v-for="(orderItem, Orderindex) in head.shoppingOrders" :key="Orderindex">
+          <div @click="handleClick(orderItem)" :class="[
+            'border p-1 rounded-sm mb-1',
+            orderItem.picking_status === 'picking' ? 'bg-green-300' : 'bg-gray-200'
+          ]">
+            <div class="flex justify-stretch p-1 ">
+              <div name="Image" class="w-1/3 border">
+                <img :src="orderItem.product.product_image_url" class="w-32 h-32 object-cover" />
               </div>
-              <div class="flex justify-between pt-1 px-1">
-                <p>{{ orderItem.product.product_id }}</p>&nbsp;
-                <p>{{ orderItem.Order_quantity }} {{ orderItem.product.unit }}</p>
-              </div>
-              <div class="flex justify-between pt-1 px-1">
-                <p class="text-amber-500 font-bold">{{ orderItem.product.product_code }}</p>&nbsp;
-                <p>เหลือ{{ orderItem.product.price }} {{ orderItem.product.unit }}</p>
-              </div>
-              <div class="flex justify-start pt-1 px-1">
-                <p>{{ orderItem.product.product_name }}</p>
-              </div>
-              <div class="flex justify-between pt-1 px-1">
-                <p>?</p>
+              <div name="Detail" class="text-xs w-2/3">
+                <div class="flex justify-start pt-1 px-1">
+                  <p>{{ orderItem.product.product_name }}</p>
+                </div>
                 <div class="flex justify-between pt-1 px-1">
-                  <p>[{{ orderItem.emp_id }}]</p>&nbsp;
-                  <p>{{ orderItem.emp_name }}</p>
+                  <p>{{ orderItem.so_running }}</p>&nbsp;
+                  <p>{{ orderItem.so_amount }} {{ orderItem.so_unit }}</p>
+                </div>
+                <div class="flex justify-between pt-1 px-1">
+                  <p class="text-amber-500 font-bold">{{ orderItem.product.product_code }}</p>&nbsp;
+                  <p>เหลือ{{ orderItem.product.product_stock }} {{ orderItem.product.product_unit }}</p>
+                </div>
+                <div class="flex pt-1 px-1 ">
+                  <div class="flex font-semibold text-violet-600">
+                    <p>F{{ orderItem.product.product_floor }}</p>&nbsp;
+                    <p>{{ orderItem.product.product_addr }}</p>
+                  </div>
+                  <div class="flex justify-between pt-1 px-1">
+                    <p>[{{ orderItem.emp_code_floor_picking }}]</p>&nbsp;
+                    <!-- <p>{{ orderItem.emp_code_floor_picking }}</p> -->
+                  </div>
+                </div>
+                <div class="text-xs flex justify-around py-1">
+                  <button class="border rounded-sm p-1 shadow-md"> หมด</button>
+                  <button class="border rounded-sm p-1 shadow-md"> ไม่พอ</button>
+                  <button class="border rounded-sm p-1 shadow-md"> ไม่เจอ</button>
+                  <button class="border rounded-sm p-1 shadow-md"> เสีย</button>
+                  <button class="border rounded-sm p-1 shadow-md"> ด้านล่าง</button>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="text-xs flex justify-between px-1">
-            <button class="border rounded-sm p-1 shadow-md"> 1 หมด</button>
-            <button class="border rounded-sm p-1 shadow-md"> 5 ไม่พอ</button>
-            <button class="border rounded-sm p-1 shadow-md"> 2 ไม่เจอ</button>
-            <button class="border rounded-sm p-1 shadow-md"> 3 เสีย</button>
-            <button class="border rounded-sm p-1 shadow-md"> 4 ด้านล่าง</button>
-          </div>
-          <div name="footer-detail" class="flex justify-between py-1 text-xs text-gray-500">
-            <div class="flex justify-start" :class="{ 'text-red-500': !(orderItem.organ && orderItem.organ.emp_id) }">
-              <p>{{ orderItem.organ?.emp_id || ' ' }}</p>&nbsp;
-              <p>{{ orderItem.organ?.emp_id ? 'จัดแล้ว' : 'ยังไม่จัด' }}</p>&nbsp;
-              <p>{{ orderItem.organ?.date || ' ' }}</p>&nbsp;
-              <p>{{ orderItem.organ?.time || ' ' }}</p>
-            </div>
 
-            <div class="flex justify-end pr-5">
-              <button class="border rounded-sm px-3 py-1 shadow-md">2</button>
+            <div name="footer-detail" class="flex justify-between py-1 text-xs text-gray-500">
+              <div class="flex justify-start">
+                <!-- <p>{{ orderItem.organ?.emp_id || ' ' }}</p>&nbsp; -->
+                <p>{{ orderItem.emp_code_floor_picking ? 'จัดแล้ว' : 'ยังไม่จัด' }}</p>&nbsp;
+                <p>{{ orderItem.so_picking_time || ' ' }}</p>&nbsp;
+                <p>{{ orderItem.so_picking_time || ' ' }}</p>
+              </div>
+              <div class="flex justify-end pr-5">
+                <button class="border rounded-sm px-3 py-1 shadow-md">2</button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
 </template>
+
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { createSockets } from '../components/socket';
+import { useRoute } from 'vue-router'
+
+
+const sockets = createSockets();
+const socketlistproduct = sockets.socketlistproduct;
+const resultRef = ref<HTMLPreElement | null>(null)
+const clickTimer = ref<NodeJS.Timeout | null>(null);
+const route = useRoute()
+const clickCount = ref(0)
+
+
+onMounted(() => {
+  socketlistproduct.on('connect', () => {
+    console.log('✅ WebSocket Connected');
+  });
+  socketlistproduct.on('disconnect', () => {
+    console.log('🔌 WebSocket Disconnected');
+  });
+  socketlistproduct.on('listproduct:get', (data) => {
+    listproduct.value = data;
+    console.log('Received product list:', listproduct.value.mem_code);
+    if (resultRef.value) {
+      resultRef.value.textContent = JSON.stringify(listproduct.value, null, 2);
+    }
+  });
+  const memCode = route.query.memCode as string;
+  socketlistproduct.emit('listproduct:get', memCode);
+  getListOrder();
+});
+
 definePageMeta({
   layout: "mobile-list-order"
 })
 
-const data = [{
-  id_shop: "84015",
-  name_shop: "ร้านซีเจ ฟาร์มาซี",
-  order: [
-    {
-      "product": {
-        "img": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fthaismegp.sme.go.th%2Fproduct%2F61e931212b3aa367bd0d4593",
-        "product_id": "060320011",
-        "product_code": "4987084551184",
-        "price": "49.00",
-        "unit": "ขวด",
-        "product_name": "ยาหยอดตา",
-        "floor": "f2"
-      },
-      "Order_quantity": "4",
-      "emp_id": "0522",
-      "emp_name": "แนน",
-      "organ": {
-        "emp_id": "0522",
-        "date": "22/04/68",
-        "time": "12:14"
-      }
-    },
-    {
-      "product": {
-        "img": "https://www.example.com/images/paracetamol.png",
-        "product_id": "060320012",
-        "product_code": "8851234567890",
-        "price": "25.00",
-        "unit": "แผง",
-        "product_name": "พาราเซตามอล 500mg",
-        "floor": "f1"
-      },
-      "Order_quantity": "10",
-      "emp_id": "0533",
-      "emp_name": "ป๊อป",
-      "organ": {
-        "emp_id": "0533",
-        "date": "22/04/68",
-        "time": "12:20"
-      }
-    },
-    {
-      "product": {
-        "img": "https://www.example.com/images/vitamin-c.png",
-        "product_id": "060320013",
-        "product_code": "8859876543210",
-        "price": "35.00",
-        "unit": "ขวด",
-        "product_name": "วิตามินซี 1000mg",
-        "floor": "f3"
-      },
-      "Order_quantity": "5",
-      "emp_id": "0544",
-      "emp_name": "มิ้น",
-      "organ": {
 
-      }
-    }
-  ],
+interface PickingData {
+  mem_code: string;
+  mem_name: string;
+  shoppingHeads: ShoppingHead[];
+  all_sh_running: string[];
 }
-]
+
+interface ShoppingHead {
+  sh_running: string;
+  shoppingOrders: ShoppingOrder[];
+}
+
+interface ShoppingOrder {
+  so_running: string;
+  so_amount: number;
+  so_unit: string;
+  picking_status: string;
+  emp_code_floor_picking: string | null;
+  so_picking_time: string | null;
+  product: Product;
+}
+
+interface Product {
+  product_code: string;
+  product_name: string;
+  product_image_url: string;
+  product_barcode: string;
+  product_floor: string;
+  product_addr: string;
+  product_stock: string;
+  product_unit: string;
+}
+
+type listproduct = PickingData[];
+const listproduct = ref<any>(null)
+console.log("listproduct " + listproduct.value)
+
+function getListOrder() {
+  const memCode = route.query.memCode as string;
+  if (memCode) {
+    console.log('📦 Sending mem_code:', memCode);
+    socketlistproduct.emit('listproduct:get', memCode);
+  } else {
+    console.error('❌ Cannot find #mem_code input element');
+  }
+}
+
+
+function handleClick(orderItem: ShoppingOrder) {
+  clickCount.value++;
+  
+  if (clickTimer.value) clearTimeout(clickTimer.value);
+  clickTimer.value = setTimeout(() => {
+    clickCount.value = 0;
+  }, 500); // รอ 500ms ถ้าไม่กดเพิ่มให้รีเซ็ต
+
+  if (clickCount.value === 2) {
+    const pickingStatus = orderItem.picking_status;
+    const soRunning = orderItem.so_running;
+    const memCode = listproduct.value.mem_code;
+    const empCode = orderItem.emp_code_floor_picking || 'EMP001';
+
+    console.log('✌️ กด 2 ครั้งแล้ว', pickingStatus);
+
+    if (!soRunning || !memCode) {
+      console.log('data : ', soRunning, memCode)
+      console.error('❌ ข้อมูลไม่ครบ หยุดส่ง socket emit');
+      return;
+    }
+
+    if (pickingStatus === 'pending') {
+      console.log('🚀 ส่ง picked');
+      socketlistproduct.emit('listproduct:picked', {
+        emp_code: empCode,
+        so_running: soRunning,
+        mem_code: memCode,
+      });
+  
+    } else if (pickingStatus === 'picking') {
+      console.log('🧹 ส่ง unpicked');
+      socketlistproduct.emit('listproduct:unpicked', {
+        so_running: soRunning,
+        mem_code: memCode,
+      });
+    } else {
+      console.log('⚠️ Status ไม่ตรงกับเงื่อนไขที่ตั้งไว้');
+    }
+    clickCount.value = 0;
+  }
+}
+
+
 
 </script>
-<style></style>
+<style>
+.content {
+  flex: 1;
+  background-color: #eeeeee;
+  /* overflow: auto; */
+  /* ถ้ามีเนื้อหาเกิน ก็ scroll ใน content ได้ */
+}
+</style>
