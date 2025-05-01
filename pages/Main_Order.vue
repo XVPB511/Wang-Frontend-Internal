@@ -252,7 +252,8 @@
                         class="border border-gray-500 rounded-sm bg-[#a0dba3] shadow-lg p-1">ชั้น 5</button>
                 </div>
                 <div>
-                    <button @click="selectedFloor = ''" class="border border-gray-500 rounded-sm bg-[#b58de3] shadow-lg p-1">ยกลัง</button>
+                    <button @click="selectedFloor = ''"
+                        class="border border-gray-500 rounded-sm bg-[#b58de3] shadow-lg p-1">ยกลัง</button>
 
                 </div>
             </div>
@@ -301,7 +302,6 @@ import { createSockets } from '../components/socket';
 import { useRouter } from 'vue-router';
 import axios from 'axios'
 
-const config = useRuntimeConfig();
 const router = useRouter();
 const { socketlistorder, socketprintTicket } = createSockets();
 const isOpenOrder = ref(false)
@@ -478,13 +478,13 @@ const getCountByFloor = (floor: string, orderIndex: number): number => {
     }, 0);
 };
 
-// socketlistorder.on('listorder:get', (data) => {
-//     listOrder.value = data
-//     // console.log("listOrder", JSON.stringify(listOrder))
-//     if (resultRef.value) {
-//         resultRef.value.textContent = JSON.stringify(listOrder.value, null, 2)
-//     }
-// })
+socketlistorder.on('listorder:get', (data) => {
+    listOrder.value = data
+    // console.log("listOrder", JSON.stringify(listOrder))
+    if (resultRef.value) {
+        resultRef.value.textContent = JSON.stringify(listOrder.value, null, 2)
+    }
+})
 
 function updatePicking(mem_Code: string, emp_code_picking: string) {
     if (mem_Code && emp_code_picking) {
@@ -508,6 +508,8 @@ function updatePicking(mem_Code: string, emp_code_picking: string) {
 
 async function printTicketID(event: Event, memCode: string, memData: any) {
     event.stopPropagation()
+
+    const config = useRuntimeConfig();
     try {
         const floor = memData.shoppingHeads?.[0]?.shoppingOrders?.[0]?.product?.product_floor;
         const payload = {
@@ -543,18 +545,36 @@ function updatePicking_Shortcut(event: Event, mem_Code: string, emp_code_picking
     console.log("printTicketID")
 }
 
+if (process.client) {
+  const token = sessionStorage.getItem('token');
+  console.log("tokenMainOrderCheck ", token)
+}
+// if (process.server) {
+//   const token = sessionStorage.getItem('token');
+//   console.log("tokenMainOrderCheckserver ", token)
+// }
+
 onMounted(() => {
 
-    listOrder.value = mockData
-    // socketlistorder.on('connect', () => {
-    //     console.log('✅ WebSocket Connected mainPAge')
-    // })
+    // token.value = sessionStorage.getItem('token');
+    // console.log("token ", token.value)
+    // listOrder.value = mockData
+    if (socketlistorder) {
+        socketlistorder.on('connect', () => {
+    })
+  }
+    const token = sessionStorage.getItem('token');
+    console.log("tokenMainOrder ", token)
 
-    // socketlistorder.on('disconnect', () => {
-    //     console.log('🔌 WebSocket Disconnected')
-    // })
+    socketlistorder.on('connect', () => {
+        console.log('✅ WebSocket Connected mainPAge')
+    })
 
-    // socketlistorder.emit('listorder:get');
+    socketlistorder.on('disconnect', () => {
+        console.log('🔌 WebSocket Disconnected')
+    })
+
+    socketlistorder.emit('listorder:get');
     document.addEventListener('click', handleClickOutside)
 })
 

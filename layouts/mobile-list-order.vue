@@ -1,75 +1,77 @@
 <template>
-    <div class="page text-black">
+  <div class="page text-black">
 
-        <div id="haeder" class=" header p-2  bg-gray-300">
-            <div class="flex justify-between">
-                <div>
-                    <button class="border rounded-sm px-3 py-1 shadow-lg">ลัง</button>
-                </div>
-                <div class="">
-                    <div class="flex justify-center text-sm">
-                        <p>เวลาตอนนี้</p>
-                        {{ listproduct?.mem_code }}
-                    </div>
-
-                    <div class="flex justify-center text-xs">
-                        <p>ทั้งหมด {{ listproduct?.shoppingHeads?.length || 0 }} ร้าน {{ listproduct?.shoppingHeads?.[0]?.shoppingOrders?.length || 0 }} รายการ</p>
-                    </div>
-                    <div class="flex justify-center text-xs">
-                        <p>เหลือจัด {{ listproduct?.shoppingHeads?.[0]?.shoppingOrders?.filter((o:any )=> o.picking_status === 'picking').length || 0 }} รายการ</p>
-                        &nbsp;<p>|</p>&nbsp;
-                        <p>กำลังจัด {{ listproduct?.shoppingHeads?.[0]?.shoppingOrders?.filter((o:any )=> o.picking_status === 'pending').length || 0 }} รายการ</p>
-                    </div>
-                </div>
-                <div>
-                    <button class="border rounded-sm px-3 py-1 shadow-lg">icon</button>
-                </div>
-            </div>
-            <div class="flex justify-between">
-                <div>
-                    <button class="border rounded-sm px-3 py-1 shadow-lg">2</button>
-                </div>
-                <div @click="gotomainpage" class="flex pt-2">
-                    <p>{{ listproduct?.mem_code }}</p>&nbsp;
-                    <p>{{ listproduct?.mem_name }}</p>
-                </div>
-                <div>
-                    <button class="border rounded-sm px-3 py-1 shadow-lg">2</button>
-                </div>
-            </div>
+    <div id="haeder" class=" header p-2  bg-gray-300">
+      <div class="flex justify-between">
+        <div>
+          <button class="border rounded-sm px-3 py-1 shadow-lg">ลัง</button>
         </div>
-        <slot />
-        <div class="footer flex items-end justify-between py-1 text-[14px]">
-            <div class=" mx-1">
-                <button class="border border-gray-500 px-2 py-1 rounded-sm bg-orange-300 shadow-lg">ชั้น 1</button>
-            </div>
-            <div class=" mr-1">
-                <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#e3e38d] shadow-lg">ชั้น 2</button>
-            </div>
-            <div class=" mr-1">
-                <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#8d9ae3] shadow-lg">ชั้น 3</button>
-            </div>
-            <div class=" mr-1">
-                <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#e38d90] shadow-lg">ชั้น 4</button>
-            </div>
-            <div class=" mr-1">
-                <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#a0dba3] shadow-lg">ชั้น 5</button>
-            </div>
-            <div class=" mr-1">
-                <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#b58de3] shadow-lg">ยกลัง</button>
-            </div>
+        <div class="">
+          <div class="flex justify-center text-sm">
+            <p>เวลาตอนนี้</p>
+            {{ listproduct?.mem_code }}
+          </div>
+
+          <div class="flex justify-center text-xs">
+            <p>ทั้งหมด {{ listproduct?.shoppingHeads?.length || 0 }} ร้าน {{
+              listproduct?.shoppingHeads?.[0]?.shoppingOrders?.length || 0 }} รายการ</p>
+          </div>
+          <div class="flex justify-center text-xs">
+            <p>เหลือจัด {{listproduct?.shoppingHeads?.[0]?.shoppingOrders?.filter((o: any) => o.picking_status ===
+              'picking').length || 0 }} รายการ</p>
+            &nbsp;<p>|</p>&nbsp;
+            <p>กำลังจัด {{listproduct?.shoppingHeads?.[0]?.shoppingOrders?.filter((o: any) => o.picking_status ===
+              'pending').length || 0 }} รายการ</p>
+          </div>
         </div>
         <div>
-            <button @click="submit" class="w-full border px-3 py-1 bg-gray-200 shadow-md text-lg">ยืนยันการจัด</button>
+          <button class="border rounded-sm px-3 py-1 shadow-lg">icon</button>
         </div>
-
+      </div>
+      <div class="flex justify-between">
+        <div>
+          <button class="border rounded-sm px-3 py-1 shadow-lg">2</button>
+        </div>
+        <div @click="gotomainpage" class="flex pt-2">
+          <p>{{ listproduct?.mem_code }}</p>&nbsp;
+          <p>{{ listproduct?.mem_name }}</p>
+        </div>
+        <div>
+          <button class="border rounded-sm px-3 py-1 shadow-lg">2</button>
+        </div>
+      </div>
     </div>
+    <slot />
+    <div class="footer flex items-end justify-between py-1 text-[14px]">
+      <div class=" mx-1">
+        <button class="border border-gray-500 px-2 py-1 rounded-sm bg-orange-300 shadow-lg">ชั้น 1</button>
+      </div>
+      <div class=" mr-1">
+        <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#e3e38d] shadow-lg">ชั้น 2</button>
+      </div>
+      <div class=" mr-1">
+        <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#8d9ae3] shadow-lg">ชั้น 3</button>
+      </div>
+      <div class=" mr-1">
+        <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#e38d90] shadow-lg">ชั้น 4</button>
+      </div>
+      <div class=" mr-1">
+        <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#a0dba3] shadow-lg">ชั้น 5</button>
+      </div>
+      <div class=" mr-1">
+        <button class="border border-gray-500 px-2 py-1 rounded-sm bg-[#b58de3] shadow-lg">ยกลัง</button>
+      </div>
+    </div>
+    <div>
+      <button v-if="showButton" @click="submit" class="w-full border px-3 py-1 bg-gray-200 shadow-md text-lg">ยืนยันการจัด</button>
+    </div>
+
+  </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { createSockets } from '../components/socket';
 import { useRouter, useRoute } from 'vue-router';
-import ListOrder from '~/pages/listOrder.vue';
 
 const sockets = createSockets();
 const socketlistproduct = sockets.socketlistproduct;
@@ -79,20 +81,21 @@ const dropdownRef = ref<HTMLElement | null>(null)
 const router = useRouter();
 const route = useRoute();
 const resultRef = ref<HTMLPreElement | null>(null)
+const token = ref(sessionStorage.getItem('token'));
 
 const toggleDropdown = () => {
-    isOpen.value = !isOpen.value
+  isOpen.value = !isOpen.value
 }
 const selectItem = (item: string) => {
-    alert(`คุณเลือก: ${item}`)
-    isOpen.value = false
+  alert(`คุณเลือก: ${item}`)
+  isOpen.value = false
 }
 
 const handleClickOutside = (event: MouseEvent) => {
-    if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
-        isOpen.value = false
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    isOpen.value = false
 
-    }
+  }
 }
 
 interface Listproduct {
@@ -130,9 +133,6 @@ interface Product {
 
 const listproduct = ref<Listproduct>();
 
-console.log("listproduct " + listproduct)
-console.log("listproduct " + listproduct.value)
-
 function getListOrder() {
   const memCode = route.query.memCode as string;
   if (memCode) {
@@ -143,7 +143,29 @@ function getListOrder() {
   }
 }
 
-console.log("listproduct "+ listproduct.value)
+
+const empCodeFromPayload = ref<string | null>(null);
+if (token.value) {
+  const payloadBase64 = token.value.split('.')[1];
+  const payloadJson = atob(payloadBase64);
+  const payload = JSON.parse(payloadJson);
+  empCodeFromPayload.value = payload.emp_code;
+  console.log("payload", JSON.stringify(payload));
+  console.log("empCodeFromPayload", empCodeFromPayload.value);
+}
+
+const empCodeFromBackend = listproduct.value?.shoppingHeads?.[0]?.shoppingOrders?.[0]?.emp_code_floor_picking;
+console.log("empCodeFromBackend", empCodeFromBackend);
+
+const showButton = ref(false);
+
+if (empCodeFromPayload.value === empCodeFromBackend) {
+  // ถ้าค่า emp_code ตรงกัน
+  showButton.value = true;
+} else {
+  showButton.value = false;
+}
+
 function submit() {
   const first = listproduct.value;
 
@@ -194,7 +216,8 @@ const gotomainpage = (): void => {
 }
 
 onMounted(() => {
-    socketlistproduct.on('connect', () => {
+  token.value = sessionStorage.getItem('token');
+  socketlistproduct.on('connect', () => {
     console.log('✅ WebSocket Connected header');
   });
   socketlistproduct.on('disconnect', () => {
@@ -207,29 +230,29 @@ onMounted(() => {
       resultRef.value.textContent = JSON.stringify(listproduct.value, null, 2);
     }
   });
-    document.addEventListener('click', handleClickOutside)
+  document.addEventListener('click', handleClickOutside)
 })
 
 onBeforeUnmount(() => {
-    document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('click', handleClickOutside)
 })
 
 </script>
 <style>
 .page {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 .header {
-    height: auto;
-    background-color: #cfcfcf;
+  height: auto;
+  background-color: #cfcfcf;
 }
 
 .footer {
-    height: auto;
-    background-color: #cfcfcf;
-    /* padding: 1; */
+  height: auto;
+  background-color: #cfcfcf;
+  /* padding: 1; */
 }
 </style>
