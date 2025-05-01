@@ -73,3 +73,7 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+
+ปัญหา error 500 sessionStorage is not defined 
+    วิธีแก้ การทำงานของ csr ทำงานอยู่ใน browser ซึ่งถ้าเอาการทำงานอื่นๆ ออกนอก export function ก็จะทำให้ มันไปทำงานอยู่ใน ssr แทนที่จะเป็น csr  
