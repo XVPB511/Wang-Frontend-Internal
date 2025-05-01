@@ -4,57 +4,82 @@
       <p>Loading...</p>
     </div>
     <div v-else-if="listproduct">
-      <div v-for="(head, headIdx) in listproduct.shoppingHeads" :key="headIdx">
-        <div v-for="(orderItem, Orderindex) in head.shoppingOrders" :key="Orderindex">
-          <div @click="handleClick(orderItem)" :class="[
-            'border p-1 rounded-sm mb-1',
-            orderItem.picking_status === 'picking' ? 'bg-green-300' : 'bg-gray-200'
-          ]">
-            <div class="flex justify-stretch p-1 ">
-              <div name="Image" class="w-1/3 border">
-                <img :src="orderItem.product.product_image_url" class="w-32 h-32 object-cover" />
-              </div>
-              <div name="Detail" class="text-xs w-2/3">
-                <div class="flex justify-start pt-1 px-1">
-                  <p>{{ orderItem.product.product_name }}</p>
+      <div v-if="!listproduct.shoppingHeads">
+        <div class="flex justify-center mt-5 ">
+          <p class="font-bold text-2xl item-center">ไม่มีรายการสินค้า</p>
+        </div>
+        <div class="flex justify-center mt-5 ">
+          <button @click="gotomainpage" class="font-semibold text-xl item-center border px-2 py-1 bg-gray-200 shadow-md rounded-sm">กลับไปที่หน้าแรก</button>
+        </div>
+      </div>
+      <div v-else>
+        <div v-for="(head, headIdx) in listproduct.shoppingHeads" :key="headIdx"
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          <div v-for="(orderItem, Orderindex) in head.shoppingOrders" :key="Orderindex">
+            <div @click="handleClick(orderItem)" :class="[
+              'border p-1 rounded-sm mb-1 ',
+              orderItem.picking_status === 'picking' ? 'bg-green-300' : 'bg-gray-200'
+            ]">
+              <div class="flex justify-stretch p-1 ">
+                <div name="Image" class="w-1/3 border">
+                  <img :src="orderItem.product.product_image_url" class="w-32 h-32 object-cover" />
                 </div>
-                <div class="flex justify-between pt-1 px-1">
-                  <p>{{ orderItem.so_running }}</p>&nbsp;
-                  <p>{{ orderItem.so_amount }} {{ orderItem.so_unit }}</p>
-                </div>
-                <div class="flex justify-between pt-1 px-1">
-                  <p class="text-amber-500 font-bold">{{ orderItem.product.product_code }}</p>&nbsp;
-                  <p>เหลือ{{ orderItem.product.product_stock }} {{ orderItem.product.product_unit }}</p>
-                </div>
-                <div class="flex pt-1 px-1 ">
-                  <div class="flex font-semibold text-violet-600">
-                    <p>F{{ orderItem.product.product_floor }}</p>&nbsp;
-                    <p>{{ orderItem.product.product_addr }}</p>
+                <div name="Detail" class="text-xs w-2/3">
+                  <div class="flex pt-1 px-1">
+                    <p class="flex justify-start">{{ orderItem.product.product_name }}</p>
+                    <p class="flex justify-end">{{ head.sh_running }}</p>
                   </div>
                   <div class="flex justify-between pt-1 px-1">
-                    <p>[{{ orderItem.emp_code_floor_picking }}]</p>&nbsp;
-                    <!-- <p>{{ orderItem.emp_code_floor_picking }}</p> -->
+                    <p>{{ orderItem.so_running }}</p>&nbsp;
+                    <p>{{ orderItem.so_amount }} {{ orderItem.so_unit }}</p>
+                  </div>
+                  <div class="flex justify-between pt-1 px-1">
+                    <p class="text-amber-500 font-bold">{{ orderItem.product.product_code }}</p>&nbsp;
+                    <p>เหลือ{{ orderItem.product.product_stock }} {{ orderItem.product.product_unit }}</p>
+                  </div>
+                  <div class="flex pt-1 px-1 ">
+                    <div class="flex font-semibold text-violet-600">
+                      <p>F{{ orderItem.product.product_floor }}</p>&nbsp;
+                      <p>{{ orderItem.product.product_addr }}</p>
+                    </div>
+                    <div class="flex justify-between pt-1 px-1">
+                      <p>[{{ orderItem.emp_code_floor_picking }}]</p>&nbsp;
+                      <!-- <p>{{ orderItem.emp_code_floor_picking }}</p> -->
+                    </div>
+                  </div>
+                  <div class="text-xs flex justify-around py-1">
+                    <button class="border rounded-sm p-1 shadow-md bg-gray-200"> หมด</button>
+                    <button class="border rounded-sm p-1 shadow-md bg-gray-200"> ไม่พอ</button>
+                    <button class="border rounded-sm p-1 shadow-md bg-gray-200"> ไม่เจอ</button>
+                    <button class="border rounded-sm p-1 shadow-md bg-gray-200"> เสีย</button>
+                    <button class="border rounded-sm p-1 shadow-md bg-gray-200"> ด้านล่าง</button>
                   </div>
                 </div>
-                <div class="text-xs flex justify-around py-1">
-                  <button class="border rounded-sm p-1 shadow-md"> หมด</button>
-                  <button class="border rounded-sm p-1 shadow-md"> ไม่พอ</button>
-                  <button class="border rounded-sm p-1 shadow-md"> ไม่เจอ</button>
-                  <button class="border rounded-sm p-1 shadow-md"> เสีย</button>
-                  <button class="border rounded-sm p-1 shadow-md"> ด้านล่าง</button>
-                </div>
               </div>
-            </div>
 
-            <div name="footer-detail" class="flex justify-between py-1 text-xs text-gray-500">
-              <div class="flex justify-start">
-                <!-- <p>{{ orderItem.organ?.emp_id || ' ' }}</p>&nbsp; -->
-                <p>{{ orderItem.emp_code_floor_picking ? 'จัดแล้ว' : 'ยังไม่จัด' }}</p>&nbsp;
-                <p>{{ orderItem.so_picking_time || ' ' }}</p>&nbsp;
-                <p>{{ orderItem.so_picking_time || ' ' }}</p>
-              </div>
-              <div class="flex justify-end pr-5">
-                <button class="border rounded-sm px-3 py-1 shadow-md">2</button>
+              <div name="footer-detail" class="flex justify-between py-1 text-xs text-gray-500">
+                <div class="flex justify-start">
+                  <!-- <p>{{ orderItem.organ?.emp_id || ' ' }}</p>&nbsp; -->
+                  <p>{{ orderItem.emp_code_floor_picking ? 'จัดแล้ว' : 'ยังไม่จัด' }}</p>&nbsp;
+                  <p>{{ new
+                    Date(orderItem.so_picking_time).toLocaleDateString('th-TH',
+                      {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                      }) +
+                    ' ' +
+                    new
+                      Date(orderItem.so_picking_time).toLocaleTimeString('th-TH',
+                        {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                        }) }}</p>&nbsp;
+                </div>
+                <div class="flex justify-end pr-5">
+                  <button class="border rounded-sm px-3 py-1 shadow-md">STK</button>
+                </div>
               </div>
             </div>
           </div>
@@ -68,7 +93,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { createSockets } from '../components/socket';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 
 const sockets = createSockets();
@@ -76,6 +101,7 @@ const socketlistproduct = sockets.socketlistproduct;
 const resultRef = ref<HTMLPreElement | null>(null)
 const clickTimer = ref<NodeJS.Timeout | null>(null);
 const route = useRoute()
+const router = useRouter()
 const clickCount = ref(0)
 
 
@@ -88,7 +114,7 @@ onMounted(() => {
   });
   socketlistproduct.on('listproduct:get', (data) => {
     listproduct.value = data;
-    console.log('Received product list:', listproduct.value.mem_code);
+    // console.log('Received product list:', listproduct.value);
     if (resultRef.value) {
       resultRef.value.textContent = JSON.stringify(listproduct.value, null, 2);
     }
@@ -138,7 +164,7 @@ interface Product {
 
 type listproduct = PickingData[];
 const listproduct = ref<any>(null)
-console.log("listproduct " + listproduct.value)
+console.log("listproduct " + listproduct)
 
 function getListOrder() {
   const memCode = route.query.memCode as string;
@@ -150,10 +176,13 @@ function getListOrder() {
   }
 }
 
+const gotomainpage = (): void => {
+  router.push({ path: '/Main_Order' });
+}
 
 function handleClick(orderItem: ShoppingOrder) {
   clickCount.value++;
-  
+
   if (clickTimer.value) clearTimeout(clickTimer.value);
   clickTimer.value = setTimeout(() => {
     clickCount.value = 0;
@@ -180,7 +209,7 @@ function handleClick(orderItem: ShoppingOrder) {
         so_running: soRunning,
         mem_code: memCode,
       });
-  
+
     } else if (pickingStatus === 'picking') {
       console.log('🧹 ส่ง unpicked');
       socketlistproduct.emit('listproduct:unpicked', {

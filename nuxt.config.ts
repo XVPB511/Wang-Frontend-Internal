@@ -13,8 +13,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE,
-      apiBaseInvoice: process.env.NUXT_PUBLIC_API_BASE_INVOICE
+      apiBaseLogin: process.env.NUXT_PUBLIC_API_BASE,
+      apiBaseInvoice: process.env.NUXT_PUBLIC_API_BASE_INVOICE,
+      apiBaseTest: process.env.NUXT_PUBLIC_API_BASE_TEST
     }
   },
 })

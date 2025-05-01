@@ -19,7 +19,7 @@ export const createSockets = () => {
   const config = useRuntimeConfig();
 
 
-  console.log('Log env: ',config.public.apiBase)
+  console.log('Log env: ',config.public.apiBaseLogin)
   console.log('Log env: ',config.public.apiBaseInvoice)
 
 
@@ -33,6 +33,7 @@ export const createSockets = () => {
     }),
     socketlistorder: io(config.public.apiBaseInvoice + '/socket/listorder', socketOptions),
     socketlistproduct: io(config.public.apiBaseInvoice + '/socket/listproducts', socketOptions),
-    
+    socketprintTicket: io(config.public.apiBaseInvoice + '/socket/ticket',socketOptions),
+
   };
-}
+  };

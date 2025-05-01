@@ -47,7 +47,7 @@ const config = useRuntimeConfig();
 const handleLogin = async () => {
   try {
     const response = await axios.post(
-      config.public.apiBase + "/api/auth/login",
+      config.public.apiBaseLogin + "/api/auth/login",
       {
         username: email.value,
         password: password.value,

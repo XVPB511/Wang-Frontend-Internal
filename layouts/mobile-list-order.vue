@@ -1,5 +1,6 @@
 <template>
-    <div class="page">
+    <div class="page text-black">
+
         <div id="haeder" class=" header p-2  bg-gray-300">
             <div class="flex justify-between">
                 <div>
@@ -8,15 +9,16 @@
                 <div class="">
                     <div class="flex justify-center text-sm">
                         <p>เวลาตอนนี้</p>
+                        {{ listproduct?.mem_code }}
+                    </div>
+
+                    <div class="flex justify-center text-xs">
+                        <p>ทั้งหมด {{ listproduct?.shoppingHeads?.length || 0 }} ร้าน {{ listproduct?.shoppingHeads?.[0]?.shoppingOrders?.length || 0 }} รายการ</p>
                     </div>
                     <div class="flex justify-center text-xs">
-                        <p>ทั้งหมด {{ shop.length }} ร้าน {{ data.order.length }} รายการ</p>
-                    </div>
-                    <div class="flex justify-center text-xs">
-                        <p>เหลือจัด {{data.order.length - data.order.filter(o => o.organ && o.organ.emp_id).length}}
-                            รายการ</p>
+                        <p>เหลือจัด {{ listproduct?.shoppingHeads?.[0]?.shoppingOrders?.filter((o:any )=> o.picking_status === 'picking').length || 0 }} รายการ</p>
                         &nbsp;<p>|</p>&nbsp;
-                        <p>กำลังจัด {{data.order.filter(o => o.organ && o.organ.emp_id).length}} รายการ</p>
+                        <p>กำลังจัด {{ listproduct?.shoppingHeads?.[0]?.shoppingOrders?.filter((o:any )=> o.picking_status === 'pending').length || 0 }} รายการ</p>
                     </div>
                 </div>
                 <div>
@@ -27,9 +29,9 @@
                 <div>
                     <button class="border rounded-sm px-3 py-1 shadow-lg">2</button>
                 </div>
-                <div class="flex pt-2">
-                    <p>{{ data.id_shop }}</p>&nbsp;
-                    <p>{{ data.name_shop }}</p>
+                <div @click="gotomainpage" class="flex pt-2">
+                    <p>{{ listproduct?.mem_code }}</p>&nbsp;
+                    <p>{{ listproduct?.mem_name }}</p>
                 </div>
                 <div>
                     <button class="border rounded-sm px-3 py-1 shadow-lg">2</button>
@@ -58,82 +60,25 @@
             </div>
         </div>
         <div>
-            <button class="w-full border px-3 py-1 bg-gray-200 shadow-md text-lg">ยืนยันการจัด</button>
+            <button @click="submit" class="w-full border px-3 py-1 bg-gray-200 shadow-md text-lg">ยืนยันการจัด</button>
         </div>
 
     </div>
 </template>
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { createSockets } from '../components/socket';
+import { useRouter, useRoute } from 'vue-router';
+import ListOrder from '~/pages/listOrder.vue';
 
+const sockets = createSockets();
+const socketlistproduct = sockets.socketlistproduct;
 const items = ['ตัวเลือกที่ 1', 'ตัวเลือกที่ 2', 'ตัวเลือกที่ 3']
-
 const isOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
-
-
-const data = {
-    id_shop: "84015",
-    name_shop: "ร้านซีเจ ฟาร์มาซี",
-    order: [
-        {
-            "product": {
-                "img": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fthaismegp.sme.go.th%2Fproduct%2F61e931212b3aa367bd0d4593",
-                "product_id": "060320011",
-                "product_code": "4987084551184",
-                "price": "49.00",
-                "unit": "ขวด",
-                "product_name": "ยาหยอดตา",
-                "floor": "f2"
-            },
-            "Order_quantity": "4",
-            "emp_id": "0522",
-            "emp_name": "แนน",
-            "organ": {
-                "emp_id": "0522",
-                "date": "22/04/68",
-                "time": "12:14"
-            }
-        },
-        {
-            "product": {
-                "img": "https://www.example.com/images/paracetamol.png",
-                "product_id": "060320012",
-                "product_code": "8851234567890",
-                "price": "25.00",
-                "unit": "แผง",
-                "product_name": "พาราเซตามอล 500mg",
-                "floor": "f1"
-            },
-            "Order_quantity": "10",
-            "emp_id": "0533",
-            "emp_name": "ป๊อป",
-            "organ": {
-                "emp_id": "0533",
-                "date": "22/04/68",
-                "time": "12:20"
-            }
-        },
-        {
-            "product": {
-                "img": "https://www.example.com/images/vitamin-c.png",
-                "product_id": "060320013",
-                "product_code": "8859876543210",
-                "price": "35.00",
-                "unit": "ขวด",
-                "product_name": "วิตามินซี 1000mg",
-                "floor": "f3"
-            },
-            "Order_quantity": "5",
-            "emp_id": "0544",
-            "emp_name": "มิ้น",
-            "organ": {
-
-            }
-        }
-    ],
-}
-const shop = [data];
+const router = useRouter();
+const route = useRoute();
+const resultRef = ref<HTMLPreElement | null>(null)
 
 const toggleDropdown = () => {
     isOpen.value = !isOpen.value
@@ -142,13 +87,126 @@ const selectItem = (item: string) => {
     alert(`คุณเลือก: ${item}`)
     isOpen.value = false
 }
+
 const handleClickOutside = (event: MouseEvent) => {
     if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
         isOpen.value = false
 
     }
 }
+
+interface Listproduct {
+  mem_code: string;
+  mem_name: string;
+  shoppingHeads: ShoppingHead[];
+  all_sh_running: string[];
+}
+
+interface ShoppingHead {
+  sh_running: string;
+  shoppingOrders: ShoppingOrder[];
+}
+
+interface ShoppingOrder {
+  so_running: string;
+  so_amount: number;
+  so_unit: string;
+  picking_status: string;
+  emp_code_floor_picking: string | null;
+  so_picking_time: string | null;
+  product: Product;
+}
+
+interface Product {
+  product_code: string;
+  product_name: string;
+  product_image_url: string;
+  product_barcode: string;
+  product_floor: string;
+  product_addr: string;
+  product_stock: string;
+  product_unit: string;
+}
+
+const listproduct = ref<Listproduct>();
+
+console.log("listproduct " + listproduct)
+console.log("listproduct " + listproduct.value)
+
+function getListOrder() {
+  const memCode = route.query.memCode as string;
+  if (memCode) {
+    console.log('📦 Sending mem_code:', memCode);
+    socketlistproduct.emit('listproduct:get', memCode);
+  } else {
+    console.error('❌ Cannot find #mem_code input element');
+  }
+}
+
+console.log("listproduct "+ listproduct.value)
+function submit() {
+  const first = listproduct.value;
+
+  if (!first) {
+    console.error('❌ ไม่มีข้อมูล listproduct');
+    alert('ไม่มีข้อมูลสินค้า');
+    return;
+  }
+
+  const memCode = first.mem_code;
+  const empCodePicking = first.shoppingHeads?.[0]?.shoppingOrders?.[0]?.emp_code_floor_picking;
+  const allShRunning = first.all_sh_running;
+
+  console.log("✅ Success", memCode, empCodePicking, allShRunning);
+
+  // ตรวจสอบว่าแต่ละค่ามีอยู่จริง
+  if (!memCode) {
+    console.error('❌ ไม่พบ mem_code');
+    alert('ข้อมูล mem_code ไม่ครบ');
+    return;
+  }
+
+  if (!empCodePicking) {
+    console.error('❌ ไม่พบ emp_code_floor_picking');
+    alert('ข้อมูลรหัสพนักงานไม่ครบ');
+    return;
+  }
+
+  if (!Array.isArray(allShRunning) || allShRunning.length === 0) {
+    console.error('❌ ไม่พบ all_sh_running');
+    alert('ข้อมูลรายการสินค้าไม่ครบ');
+    return;
+  }
+
+  // ถ้าทุกอย่างถูกต้อง
+  socketlistproduct.emit('listproduct:submitpicking', {
+    emp_code_picking: empCodePicking,
+    mem_code: memCode,
+    all_sh_running: allShRunning
+  });
+
+
+  router.push({ path: '/Main_Order' });
+}
+
+const gotomainpage = (): void => {
+  router.push({ path: '/Main_Order' });
+}
+
 onMounted(() => {
+    socketlistproduct.on('connect', () => {
+    console.log('✅ WebSocket Connected header');
+  });
+  socketlistproduct.on('disconnect', () => {
+    console.log('🔌 WebSocket Disconnected');
+  });
+  socketlistproduct.on('listproduct:get', (data) => {
+    listproduct.value = data;
+    // console.log('Received product list:', listproduct.value);
+    if (resultRef.value) {
+      resultRef.value.textContent = JSON.stringify(listproduct.value, null, 2);
+    }
+  });
     document.addEventListener('click', handleClickOutside)
 })
 
@@ -162,7 +220,6 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     height: 100vh;
-    color: #000;
 }
 
 .header {
